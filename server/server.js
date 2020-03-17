@@ -12,6 +12,7 @@ dotenv.config();
 */
 // REST-api for backend operations
 const REST = require('./routes/api/rest');
+const ADMIN = require('./routes/api/admin/rest');
 // database: psql + sequelize
 const db = require('./database/db');
 
@@ -26,6 +27,7 @@ app.use(express.json());
 // Oklart om detta kommer behövas på backenden?
 // app.use(express.urlencoded({extended: false}));
 app.use('/api', REST);
+app.use('/api/admin', ADMIN);
 
 const PORT = process.env.PORT;
 const httpsOptions = {

@@ -14,16 +14,7 @@ const Mailer = require('../../managers/Mailer');
 const {validEmail, validCode} = require('../../managers/Validator');
 
 // middleware
-const {auth} = require('../auth/token');
-
-router.get('/members', (req, res) => {
-    Members.findAll()
-        .then(members => {
-            console.log(members);
-            res.sendStatus(200);
-        })
-        .catch(err => console.log(err));
-});
+const {auth, refreshAuth} = require('../auth/token');
 
 router.post('/activate', async (req, res) => {
     const {error} = validEmail(req.body);
@@ -64,7 +55,7 @@ router.post('/activate', async (req, res) => {
     * sign in via validating their email
     */
     await member.activate();
-    console.log(member.temp_pass);
+    // check whether member is admin or regular
     const message = {
         from: 'noreply@iare.se',
         to: `${maybeEmail}`,
@@ -81,7 +72,15 @@ router.post('/activate', async (req, res) => {
         }
     });
     */
-    jwt.sign({email: maybeEmail}, process.env.TOKEN_SECRET, {expiresIn: '6h'},(err, token) => {
+   let payload = {
+    email: maybeEmail
+   };
+    if(member.isAdmin()) {
+        payload.admin = {
+            foo: 'bar'
+        }
+    };
+    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
         res.status(200).json({
             status: 'success',
             code: 1,
@@ -92,49 +91,102 @@ router.post('/activate', async (req, res) => {
     });
 });
 
-router.post('/verify', auth, (req, res) => {
-    jwt.verify(req.token, process.env.TOKEN_SECRET, async (err, authData) => {
-        if(err) {
-            res.status(401).json({
-                status: 'bad',
-                code: 5,
-                msg: 'Tempered token. Access denied.'
-            });
-        };
-        const {error} = validCode(req.body);
-        if(error) {
-            return res.status(400).json({
-                status: 'bad',
-                code: 7,
-                msg: `The temporary login code \
-                is invalid. Check your inbox.`
-            });
-        };
-        const tempCode = req.body.temp_pass;
-        const email = authData.email;
-        const member = await Members.findOne({
-            where: {
-                email: email,
-                present: false,
-                temp_pass: tempCode
-            }
+router.post('/verify', auth, async (req, res) => {
+    const {error} = validCode(req.body);
+    if(error) {
+        return res.status(400).json({
+            status: 'bad',
+            code: 7,
+            msg: `The temporary login code \
+            is invalid. Check your inbox.`
         });
-        if(!member) {
-            return res.status(400).json({
-                status: 'bad',
-                code: 7,
-                msg: `The temporary login code \
-                is invalid. Check your inbox.`
-            });
-        };
-        await member.signIn();
-        
+    };
+    const tempCode = req.body.temp_pass;
+    const email = req.user.email;
+    const member = await Members.findOne({
+        where: {
+            email: email,
+            present: false,
+            temp_pass: tempCode
+        }
+    });
+    if(!member) {
+        return res.status(400).json({
+            status: 'bad',
+            code: 7,
+            msg: `The temporary login code \
+            is invalid. Check your inbox.`
+        });
+    };
+    await member.signIn();
+    jwt.sign(req.user, process.env.REFRESH_TOKEN_SECRET, async (err, token) => {
+        await member.setRefreshToken(token);
         res.status(200).json({
             status: 'success',
             code: 6,
-            msg: 'Welcome'
+            refreshToken: token,
+            msg: 'Welcome',
+            payload: req.user
         });
-    })
-})
+    });
+});
+
+router.post('/refresh', refreshAuth, async (req, res) => {
+    const refreshToken = req.headers['authorization'];
+    const member = await Members.findByEmail(req.user.email);
+    if(refreshToken == null) {
+        return res.status(403).json({
+            status: 'bad',
+            code: 8,
+            msg: `refreshToken is not authorized.`
+        });
+    };
+    if(!req.user) {
+        return res.status(401).json({
+            status: 'bad',
+            code: 9,
+            msg: `No user found on client`
+        });
+    };
+    if(!member) {
+        return res.status(400).json({
+            status: 'bad',
+            code: 10,
+            msg: `No user found in db`
+        });
+    };
+    if(member.refresh_token !== refreshToken) {
+        return res.status(403).json({
+            status: 'bad',
+            code: 8,
+            msg: `refreshToken is not authorized.`
+        });
+    };
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+        if(err) {
+            return res.status(403).json({
+                status: 'bad',
+                code: 8,
+                msg: `refreshToken is not authorized.`
+            });
+        };
+        let payload = {
+            email: user.email
+        };
+        if(member.isAdmin()) {
+            payload.admin = {
+                foo: 'bar'
+            };
+        };
+        jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
+            res.status(200).json({
+                status: 'success',
+                code: 11,
+                token: token,
+                msg: `Token extended with 25 minutes`
+            });
+        });
+    });
+});
 
 module.exports = router;

@@ -22,8 +22,22 @@ const Members = db.define('members', {
     },
     signed_in: {
         type: Sequelize.BOOLEAN
+    },
+    admin: {
+        type: Sequelize.BOOLEAN
+    },
+    refresh_token: {
+        type: Sequelize.STRING
     }
 });
+
+Members.findByEmail = function(email) {
+    return Members.findOne({
+        where: {
+            email: email
+        }
+    });
+};
 
 Members.prototype.activate = async function() {
     /*
@@ -43,5 +57,20 @@ Members.prototype.signIn = async function() {
     this.signed_in = false; // change later to true
     this.save();
 };
+Members.prototype.isAdmin = function() {
+    return this.admin;
+};
+Members.prototype.setRefreshToken = function(token) {
+    this.refresh_token = token;
+    this.save();
+};
+Members.prototype.invalidate = function() {
+    this.temp_pass = null;
+    this.present = false;
+    this.signed_in = false;
+    this.refresh_token = null;
+    this.save();
+}
+
 
 module.exports = Members;

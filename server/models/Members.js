@@ -25,21 +25,23 @@ const Members = db.define('members', {
     }
 });
 
-Members.prototype.activate = function() {
+Members.prototype.activate = async function() {
     /*
     * Generates a randomized code,
     * then stores it to the instance,
     * for later validation.
     */
-    Words.generateCode()
-        .then(code => {
-            this.present = false; // change later to true
-            this.temp_pass = code;
-            this.save();
-        });
+    const code = await Words.generateCode();
+    this.present = false; // change later to true
+    this.temp_pass = code;
+    this.save();
 };
 Members.prototype.getCode = function() {
     return this.temp_pass;
+};
+Members.prototype.signIn = async function() {
+    this.signed_in = false; // change later to true
+    this.save();
 };
 
 module.exports = Members;

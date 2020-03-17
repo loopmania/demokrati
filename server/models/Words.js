@@ -17,7 +17,15 @@ const Words = db.define('words_dataset', {
 * login code from a wordset
 * @return {login code} from words 
 */
-Words.generateCode = function() {
+Words.generateCode = async function() {
+    const words = await Words.findAll({
+        order: Sequelize.fn('RANDOM'),
+        limit: 4,
+        raw: true
+    });
+    const tempCode = words.map(word => word.name).join('-');
+    return tempCode;
+    /*
     return new Promise(resolve => {
         Words.findAll({
             order: Sequelize.fn('RANDOM'),
@@ -29,6 +37,7 @@ Words.generateCode = function() {
                 resolve(tempCode);
             });
     })
+    */
 };
 
 module.exports = Words;

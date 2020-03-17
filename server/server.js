@@ -4,6 +4,8 @@ const path = require('path');
 // modules for filesystem and ssl
 const fs = require('fs');
 const https = require('https');
+const dotenv = require('dotenv');
+dotenv.config();
 
 /*
 * custom modules area
@@ -19,12 +21,13 @@ db.authenticate()
 
 const app = express();
 
+// middlewares
 app.use(express.json());
 // Oklart om detta kommer behövas på backenden?
-app.use(express.urlencoded({extended: false}));
+// app.use(express.urlencoded({extended: false}));
 app.use('/api', REST);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 const httpsOptions = {
     cert: fs.readFileSync(path.join(__dirname, 'ssl', 'server.crt')),
     key: fs.readFileSync(path.join(__dirname, 'ssl', 'server.key'))

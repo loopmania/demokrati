@@ -6,7 +6,8 @@ const Words = require('./Words');
 const Members = db.define('members', {
     id: {
         type: Sequelize.INTEGER,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     email: {
         type: Sequelize.STRING
@@ -28,6 +29,9 @@ const Members = db.define('members', {
     },
     refresh_token: {
         type: Sequelize.STRING
+    },
+    has_voted: {
+        type: Sequelize.BOOLEAN
     }
 });
 
@@ -69,8 +73,16 @@ Members.prototype.invalidate = function() {
     this.present = false;
     this.signed_in = false;
     this.refresh_token = null;
+    this.hasVoted = false;
     this.save();
-}
+};
+Members.prototype.hasVoted = function() {
+    return this.has_voted;
+};
+Members.prototype.vote = function() {
+    this.has_voted = true;
+    this.save();
+};
 
 
 module.exports = Members;

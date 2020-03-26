@@ -14,7 +14,7 @@ const validEmail = (data) => {
 
 const validCode = (data) => {
     const schema = {
-        temp_pass: Joi.string().regex(/^([A-Z]{4}-?){4}$/).required()
+        code: Joi.string().regex(/^([A-Z]{4}-?){4}$/).required()
     };
     return Joi.validate(data, schema);
 }

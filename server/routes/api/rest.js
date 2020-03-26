@@ -7,25 +7,28 @@ const router = express.Router();
 
 // models
 const Members = require('../../models/Members');
+const Polls = require('../../models/Polls');
+const Votes = require('../../models/Votes');
 const Words = require('../../models/Words');
 
 // managers
 const Mailer = require('../../managers/Mailer');
 const {validEmail, validCode} = require('../../managers/Validator');
+const MsgHandler = require('../../managers/MsgHandler');
+
+exports.io = undefined;
 
 // middleware
-const {auth, refreshAuth} = require('../auth/token');
+const {auth, isMember} = require('../auth/token');
+
+router.get('/', (req, res) => {
+    return MsgHandler(res, 12);
+});
 
 router.post('/activate', async (req, res) => {
-    const {error} = validEmail(req.body);
-    if(error) {
-        return res.status(400).json({
-            status: 'bad',
-            code: 3,
-            msg: `Cannot validate email. \
-            Please make sure you use a valid \
-            email provided by KTH`
-        });
+    const {Error} = validEmail(req.body);
+    if(Error) {
+        return MsgHandler(res, 3);
     }
 
     const maybeEmail = req.body.email;
@@ -41,13 +44,7 @@ router.post('/activate', async (req, res) => {
         }
     });
     if (!member) {
-        return res.status(400).json({
-            status: 'bad',
-            code: 2,
-            msg: `It seems like you are \
-            not registered as a THS member, \
-            please contact Valberedningen or IT`
-        });
+        return MsgHandler(res, 2);
     };
     /*
     * Start a validation process
@@ -80,28 +77,19 @@ router.post('/activate', async (req, res) => {
             foo: 'bar'
         }
     };
-    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
-        res.status(200).json({
-            status: 'success',
-            code: 1,
-            token: token,
-            msg: `A validation email has been sent to ${maybeEmail}`,
-            code: member.getCode()
+    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '10m'},(err, token) => {
+        return MsgHandler(res, 1, {
+            token: token, email: maybeEmail, code: member.getCode()
         });
     });
 });
 
 router.post('/verify', auth, async (req, res) => {
-    const {error} = validCode(req.body);
-    if(error) {
-        return res.status(400).json({
-            status: 'bad',
-            code: 7,
-            msg: `The temporary login code \
-            is invalid. Check your inbox.`
-        });
+    const {Error} = validCode(req.body);
+    if(Error) {
+        return MsgHandler(res, 7);
     };
-    const tempCode = req.body.temp_pass;
+    const tempCode = req.body.code;
     const email = req.user.email;
     const member = await Members.findOne({
         where: {
@@ -111,64 +99,25 @@ router.post('/verify', auth, async (req, res) => {
         }
     });
     if(!member) {
-        return res.status(400).json({
-            status: 'bad',
-            code: 7,
-            msg: `The temporary login code \
-            is invalid. Check your inbox.`
-        });
+        return MsgHandler(res, 7);
     };
     await member.signIn();
     jwt.sign(req.user, process.env.REFRESH_TOKEN_SECRET, async (err, token) => {
         await member.setRefreshToken(token);
-        res.status(200).json({
-            status: 'success',
-            code: 6,
-            refreshToken: token,
-            msg: 'Welcome',
-            payload: req.user
-        });
+        return MsgHandler(res, 6, {token: token, user: req.user});
     });
 });
 
-router.post('/refresh', refreshAuth, async (req, res) => {
-    const refreshToken = req.headers['authorization'];
-    const member = await Members.findByEmail(req.user.email);
-    if(refreshToken == null) {
-        return res.status(403).json({
-            status: 'bad',
-            code: 8,
-            msg: `refreshToken is not authorized.`
-        });
-    };
-    if(!req.user) {
-        return res.status(401).json({
-            status: 'bad',
-            code: 9,
-            msg: `No user found on client`
-        });
-    };
-    if(!member) {
-        return res.status(400).json({
-            status: 'bad',
-            code: 10,
-            msg: `No user found in db`
-        });
-    };
+router.patch('/refresh', auth, isMember, (req, res) => {
+    // const refreshToken = req.headers['authorization'];
+    const refreshToken = req.body.refreshToken || null; // should validate
+
     if(member.refresh_token !== refreshToken) {
-        return res.status(403).json({
-            status: 'bad',
-            code: 8,
-            msg: `refreshToken is not authorized.`
-        });
+        return MsgHandler(res, 5);
     };
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if(err) {
-            return res.status(403).json({
-                status: 'bad',
-                code: 8,
-                msg: `refreshToken is not authorized.`
-            });
+            return MsgHandler(res, 5);
         };
         let payload = {
             email: user.email
@@ -179,14 +128,54 @@ router.post('/refresh', refreshAuth, async (req, res) => {
             };
         };
         jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
-            res.status(200).json({
-                status: 'success',
-                code: 11,
-                token: token,
-                msg: `Token extended with 25 minutes`
-            });
+            return MsgHandler(res, 11, { token: token });
         });
     });
 });
 
+router.get('/findVote', auth, isMember, (req, res) => {
+    if(member.hasVoted()) {
+        return MsgHandler(res, 15);
+    }
+    Polls.findActive()
+        .then(result => {
+            return MsgHandler(res, 16, {
+                vote: {
+                    id: result[0].id,
+                    title: result[0].title,
+                    candidates: result[0].candidates
+                }
+            })
+        })
+        .catch(error => {
+            if(error > 1) {
+                return MsgHandler(res, 18);
+            }
+            if(error === 0) {
+                return MsgHandler(res, 17);
+            }
+        });
+});
+
+router.put('/vote', auth, isMember, (req, res) => {
+    const poll = req.body.poll;
+    const candidate = req.body.candidate;
+    Polls.findByPk(poll,{
+        where: {
+            active: true
+        }
+    })
+        .then(async result => {
+            await Votes.create({
+                pollId: poll,
+                vote: candidate
+            });
+            const member = req.member;
+            member.vote();
+        })
+        .catch(error => {
+            console.log(`err: ${JSON.stringify(error)}`);
+        })
+    res.sendStatus(200);
+})
 module.exports = router;

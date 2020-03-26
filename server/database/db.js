@@ -9,5 +9,6 @@ const credentials = JSON.parse(rawCredentials);
 
 module.exports = new Sequelize(credentials.database.name, credentials.database.dev.username, credentials.database.dev.password, {
   host: 'localhost',
-  dialect: 'postgres'
+  dialect: 'postgres',
+  logging: false
 });

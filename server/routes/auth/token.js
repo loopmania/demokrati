@@ -1,23 +1,22 @@
 const jwt = require('jsonwebtoken');
 
+const Members = require('../../models/Members');
+
+const MsgHandler = require('../../managers/MsgHandler');
+
 function auth(req, res, next) {
     // to be set in frontend
-    const bearerHeader = req.headers['authorization'];
+    const preHeader = req.headers['authorization'] || null;
+    const bearerHeader = preHeader == 'null' ? null : preHeader;
     if(!bearerHeader) {
-        res.status(403).json({
-            status: 'bad',
-            code: 4,
-            msg: 'Cannot use this service. Bad token.'
-        });
+        return MsgHandler(res, 13);
+    } else if(bearerHeader == null) {
+        return MsgHandler(res, 4);
     } else {
         const bearerToken = bearerHeader;
         jwt.verify(bearerToken, process.env.TOKEN_SECRET, (err, decoded) => {
             if(err) {
-                res.status(401).json({
-                    status: 'bad',
-                    code: 5,
-                    msg: 'Tempered token. Access denied.'
-                });
+                return MsgHandler(res, 5);
             } else {
                 req.user = decoded;
                 next();
@@ -26,31 +25,22 @@ function auth(req, res, next) {
     };
 };
 
-function refreshAuth(req, res, next) {
-    // to be set in frontend
-    const bearerHeader = req.headers['authorization'];
-    if(!bearerHeader) {
-        res.status(403).json({
-            status: 'bad',
-            code: 4,
-            msg: 'Cannot use this service. Bad token.'
-        });
-    } else {
-        const bearerToken = bearerHeader;
-        jwt.verify(bearerToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-            if(err) {
-                res.status(401).json({
-                    status: 'bad',
-                    code: 5,
-                    msg: 'Tempered token. Access denied.'
-                });
-            } else {
-                req.user = decoded;
-                next();
-            };
-        });
+async function isMember(req, res, next) {
+    if(!req.user) {
+        return MsgHandler(res, 9);
     };
-};
+    const member = await Members.findByEmail(req.user.email,{
+        where: {
+            present: false, // change to true
+            signed_in: false // change to true
+        }
+    }); // should find a better way to store frequently asked data
+    if(!member) {
+        return MsgHandler(res, 10);
+    };
+    req.member = member;
+    next();
+}
 
 module.exports.auth = auth;
-module.exports.refreshAuth = refreshAuth;
+module.exports.isMember = isMember;

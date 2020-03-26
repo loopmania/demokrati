@@ -225,7 +225,25 @@ export default new Vuex.Store({
           })
       })
     },
-
+    vote(context, payload) {
+      fetch('/api/vote', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': context.state.token
+        },
+        body: JSON.stringify({
+          candidate: payload.candidateId,
+          poll: payload.pollId
+        })
+      })
+        .then(res => {
+          return res.json()
+        })
+        .then(data => {
+          console.log(data) // temporary
+        })
+    }
   },
   modules: {
   }

@@ -19,6 +19,10 @@ function auth(req, res, next) {
                 return MsgHandler(res, 5);
             } else {
                 req.user = decoded;
+                const ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+                if(req.user.ip !== ip) {
+                    return MsgHandler(res, 24);
+                }
                 next();
             };
         });

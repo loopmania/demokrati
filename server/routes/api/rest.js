@@ -21,7 +21,7 @@ exports.io = undefined;
 // middleware
 const {auth, isMember} = require('../auth/token');
 
-router.get('/', (req, res) => {
+router.get('/me', auth, isMember, (req, res) => {
     return MsgHandler(res, 12);
 });
 
@@ -70,16 +70,19 @@ router.post('/activate', async (req, res) => {
     });
     */
    let payload = {
-    email: maybeEmail
+    email: maybeEmail,
+    ip: req.header('x-forwarded-for') || req.connection.remoteAddress
    };
     if(member.isAdmin()) {
         payload.admin = {
             foo: 'bar'
         }
     };
-    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '10m'},(err, token) => {
+    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
         return MsgHandler(res, 1, {
-            token: token, email: maybeEmail, code: member.getCode()
+            token: token,
+            email: maybeEmail, // to be removed
+            code: member.getCode() // to be removed
         });
     });
 });
@@ -102,16 +105,17 @@ router.post('/verify', auth, async (req, res) => {
         return MsgHandler(res, 7);
     };
     await member.signIn();
-    jwt.sign(req.user, process.env.REFRESH_TOKEN_SECRET, async (err, token) => {
+    const user = req.user;
+    delete user.exp;
+    jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, async (err, token) => {
         await member.setRefreshToken(token);
-        return MsgHandler(res, 6, {token: token, user: req.user});
+        return MsgHandler(res, 6, {token: token, user: user}); // Remove user, not necessary
     });
 });
 
 router.patch('/refresh', auth, isMember, (req, res) => {
-    // const refreshToken = req.headers['authorization'];
     const refreshToken = req.body.refreshToken || null; // should validate
-
+    const member = req.member;
     if(member.refresh_token !== refreshToken) {
         return MsgHandler(res, 5);
     };
@@ -120,7 +124,8 @@ router.patch('/refresh', auth, isMember, (req, res) => {
             return MsgHandler(res, 5);
         };
         let payload = {
-            email: user.email
+            email: user.email,
+            ip: user.ip
         };
         if(member.isAdmin()) {
             payload.admin = {
@@ -134,11 +139,14 @@ router.patch('/refresh', auth, isMember, (req, res) => {
 });
 
 router.get('/findVote', auth, isMember, (req, res) => {
-    if(member.hasVoted()) {
-        return MsgHandler(res, 15);
-    }
+    const member = req.member;
     Polls.findActive()
         .then(result => {
+            if(member.hasVoted()) {
+                return MsgHandler(res, 15, {
+                    title: result[0].title
+                });
+            }
             return MsgHandler(res, 16, {
                 vote: {
                     id: result[0].id,
@@ -165,17 +173,34 @@ router.put('/vote', auth, isMember, (req, res) => {
             active: true
         }
     })
-        .then(async result => {
-            await Votes.create({
-                pollId: poll,
-                vote: candidate
-            });
+        .then(result => {
             const member = req.member;
-            member.vote();
+            member.vote()
+                .then(async () => {
+                    await Votes.create({
+                        pollId: poll,
+                        vote: candidate
+                    });
+                    return MsgHandler(res, 27);
+                })
+                .catch(()=> {
+                    return MsgHandler(res, 15, {title: result.title})
+                });
         })
         .catch(error => {
-            console.log(`err: ${JSON.stringify(error)}`);
-        })
-    res.sendStatus(200);
+            return MsgHandler(res, 17);
+        });
+});
+
+router.get('/timeleft', auth, isMember, (req, res) => {
+    const user = req.user;
+    const currentTime = Math.floor(Date.now() / 1000);
+    const expireTime = user.exp;
+    if(expireTime - currentTime < 2 * 60 && currentTime < expireTime) {
+        return MsgHandler(res, 25);
+    } else {
+        return MsgHandler(res, 26);
+    }
+
 })
 module.exports = router;

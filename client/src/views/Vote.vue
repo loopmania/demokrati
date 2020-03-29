@@ -8,14 +8,18 @@
             <v-card-title>
                 <span
                 v-if="waiting === true && voted === false">
-                    Väntar på sluten votering
+                    Väntar på ny sluten votering
                 </span>
                 <span
                 v-else-if="waiting === false && voted === false && title !== null">
-                    Val av {{title}}
+                    {{title}}
                 </span>
                 <span
-                v-else>
+                v-else-if="alreadyVoted === true">
+                    Du har redan röstat på {{oldTitle}}
+                </span>
+                <span
+                v-else-if="voted === true">
                     Tack för din röst!
                 </span>
             </v-card-title>
@@ -32,7 +36,7 @@
                             <v-chip
                             v-for="candidate in candidates"
                             :key="candidate"
-                            @click="save">
+                            @click="save(candidate)">
                                 {{candidate}}
                             </v-chip>
                         </v-chip-group>
@@ -47,14 +51,16 @@ export default {
     created() {
         this.findVote();
         this.$root.$data.socket.on('invokePoll', this.findVote);
-        this.$root.$data.socket.on('inactivate', this.resetVote);
+        this.$root.$data.socket.on('inactivate', this.inactivateVote);
     },
     data() {
         return {
-            waiting: true,
+            waiting: false,
             voted: false,
+            alreadyVoted: false,
             selection: null,
             title: null,
+            oldTitle: null,
             id: null,
             candidates: []
         }
@@ -66,15 +72,49 @@ export default {
             setTimeout(() => {
                 this.voted = false;
                 this.waiting = true;
-            }, 1500);
+            }, 2500);
         },
-        save() {
-            this.$store.dispatch('vote', {
-                candidateId: this.$data.selection,
-                pollId: this.id
-            })
+        save(candidate) {
+            if(candidate !== undefined && this.id !== undefined) {
+                this.$store.dispatch('vote', {
+                    candidate: this.candidates.indexOf(candidate),
+                    poll: this.id
+                })
+                    .then(() => {
+                        this.hasVoted();
+                    })
+                    .catch(error => {
+                        if(error.code) {
+                            if(error.voted) {
+                                this.oldTitle = error.title;
+                                this.alreadyVoted = true;
+                                this.hasVoted();
+                            } else {
+                                this.waiting = true;
+                                this.resetVote();
+                            }
+                            this.$store.commit('alertClient', {
+                                color: 'error',
+                                text: error.msg,
+                                timeout: 6 * 1000,
+                                snackbar: true,
+                                action: {
+                                    method: 'exit',
+                                    text: 'Ok'
+                                }
+                            })
+                        }
+                    });
+            } else {
+                console.log('fuck');
+            }
             
-            this.hasVoted();
+        },
+        inactivateVote() {
+            this.waiting = true;
+            this.voted = false;
+            this.resetVote();
+
         },
         resetVote() {
             this.title = null;
@@ -85,7 +125,7 @@ export default {
             console.log('looking for vote');
             this.$store.dispatch('findVote')
                 .then(data => {
-                    if(data.statusCode === 13) {
+                    if(data.code === 13) {
                         this.waiting = true;
                         this.resetVote();
                     } else {
@@ -99,7 +139,8 @@ export default {
                 .catch(error => {
                     console.log(error);
                     if(error.voted) {
-                        this.waiting = false;
+                        this.oldTitle = error.title;
+                        this.alreadyVoted = true;
                         this.hasVoted();
                     } else {
                         this.waiting = true;

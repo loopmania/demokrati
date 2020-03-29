@@ -47,6 +47,7 @@ const httpsOptions = {
 };
 app.set('port', PORTS);
 
+/*
 httpApp.set('port', PORT);
 httpApp.all('*', (req, res) => {
     const url = `https://${req.hostname}:${PORTS}${req.url}`;
@@ -58,7 +59,8 @@ httpApp.all('*', (req, res) => {
 http.createServer(httpApp)
     .listen(httpApp.get('port'), () => {
         console.log(`Normal Backend started on port ${httpApp.get('port')}`);
-    })
+    });
+*/
 
 const secureServer = https.createServer(httpsOptions, app)
     .listen(app.get('port'), () => {

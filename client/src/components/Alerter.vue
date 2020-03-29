@@ -18,12 +18,14 @@ export default {
     name: 'Alerter',
     computed: {
         alertError() {
-            return this.$store.getters.alertError
+            const instructions = this.$store.getters.alertError;
+            return instructions;
         }
     },
     data() {
         return {
-            snackbar: false
+            snackbar: false,
+            timer: null
         }
     },
     methods: {
@@ -33,6 +35,7 @@ export default {
                 //
             }
             if(method === 'update') {
+                clearTimeout(this.timer);
                 this.$store.dispatch('refresh');
             }
             this.alertError.snackbar = false;

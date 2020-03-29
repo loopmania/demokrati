@@ -26,9 +26,22 @@ export default {
   methods: {
     findAuth() {
       this.$store.dispatch('authenticate')
-        .then(status => {
-          if(status === 'success') {
-            console.log('authenticated');
+        .then(result => {
+          if(result.status === 'success') {
+            if(![8, 13].includes(result.code)) {
+                this.$store.dispatch('isAdmin')
+                  .then(result => {
+                    if(result.status === 'success') {
+                      this.$root.$data.socket.emit('join', 'admin');
+                      this.$root.$data.socket.emit('join', 'sm');
+                    } else {
+                      this.$root.$data.socket.emit('join', 'sm');
+                    }
+                  })
+                  .catch(() => {
+                    //
+                  });
+            }
           }
         })
         .catch(error => {
@@ -42,19 +55,31 @@ export default {
               text: 'Stäng'
             }
           });
+          this.$store.dispatch('destroyToken');
         });
     },
     refresh() {
-      this.$store.commit('alertClient', {
-        color: 'warning',
-        text: 'Are you still here?',
-        timeout: 60 * 1000,
-        snackbar: true,
-        action: {
-          method: 'update',
-          text: 'Yes'
-        }
-      })
+      this.$store.dispatch('checkTime')
+        .then(result => {
+          if(result.status === 'bad') {
+            this.$store.commit('alertClient', {
+              color: 'warning',
+              text: 'Är du fortfarande kvar?',
+              timeout: 2 * 60 * 1000,
+              snackbar: true,
+              action: {
+                method: 'update',
+                text: 'Ja'
+              }
+            })
+          } else {
+            console.log(result.msg);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          this.$store.dispatch('destroyToken');
+        });
     },
   }
 };

@@ -25,6 +25,10 @@ router.use((req, res, next) => {
     }
 })
 
+router.get('/me', (req, res) => {
+    return MsgHandler(res, 23);
+});
+
 router.post('/invalidate', async (req, res) => {
     const maybeMember = req.body.id;
     const member = await Members.findByPk(maybeMember);
@@ -34,6 +38,36 @@ router.post('/invalidate', async (req, res) => {
     member.invalidate();
     return MsgHandler(res, 19, { id: maybeMember });
 });
+
+router.post('/createPoll', (req,res) => {
+    const poll = req.body.poll;
+    const candidates = `{${poll.candidates.join(',')}}`;
+    console.log(candidates);
+    Polls.create({
+        title: poll.title,
+        candidates: poll.candidates
+    })
+        .then(() => {
+            exports.io.to('admin').emit('refreshPolls');
+            return MsgHandler(res, 28);
+        })
+        .catch(() => {
+            return MsgHandler(res, 29);
+        })
+    
+});
+
+router.get('/polls', (req, res) => {
+    Polls.findAll({
+        attributes: ['id','title', 'candidates','active']
+    })
+        .then((polls) => {
+            return MsgHandler(res, 30, {polls: polls});
+        })
+        .catch(() => {
+            return MsgHandler(res, 31);
+        })
+})
 
 router.put('/invokePoll', (req, res) => {
     const poll = req.body.pollID;
@@ -55,16 +89,14 @@ router.put('/invokePoll', (req, res) => {
                 });
         });
 });
-
-router.get('/inactivate', (req, res) => {
-    Polls.findActive()
-        .then(record => {
-            record.active = false;
-            record.save();
+router.put('/inactivate', (req, res) => {
+    const poll = req.body.pollID;
+    Polls.inactivate(poll)
+        .then(() => {
             exports.io.to('sm').emit('inactivate');
             return res.sendStatus(200);
         })
-        .catch(error => {
+        .catch((error) => {
             console.log(error);
         });
 })
@@ -77,4 +109,4 @@ router.get('/refresh', (req, res) => {
 module.exports = router;
 module.exports.init = ({ io }) => {
     exports.io = io;
-  };
+};

@@ -80,8 +80,16 @@ Members.prototype.hasVoted = function() {
     return this.has_voted;
 };
 Members.prototype.vote = function() {
-    this.has_voted = true;
-    this.save();
+    return new Promise((resolve, reject) => {
+        if(!this.hasVoted()) {
+            this.has_voted = true;
+            this.save();
+            resolve();
+        }
+        else {
+            reject();
+        }
+    });
 };
 
 

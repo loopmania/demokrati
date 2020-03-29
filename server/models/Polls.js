@@ -52,14 +52,28 @@ Polls.activate = function(poll) {
     })
 };
 Polls.inactivate = function(poll) {
-    Polls.findByPk(poll)
-        .then(record => {
-            record.active = false;
-            record.save();
+    return new Promise((resolve, reject) => {
+        Polls.findActive()
+        .then(result => {
+            if(result[0].active === true && result[0].id === poll) {
+                Polls.findByPk(poll)
+                    .then(record => {
+                        record.active = false;
+                        record.save();
+                        resolve();
+                    })
+                    .catch(error => {
+                        reject(error);
+                    })
+            } else {
+                reject();
+            }
         })
-        .catch(error => {
-            console.log(error);
-        });
+        .catch((error) => {
+            reject(error);
+        })
+    })
+    
 };
 
 

@@ -4,6 +4,7 @@
             <v-app-bar-nav-icon
             class="grey--text"
             @click.stop="drawer = !drawer">
+            <v-icon>menu</v-icon>
             </v-app-bar-nav-icon>
             <v-toolbar-title class="text-uppercase grey--text">
                 <span class="font-weight-light">Demokrat</span>
@@ -13,15 +14,17 @@
             <v-btn
             text
             v-if="!loggedIn"
-            router to="/login">
-                <v-icon left>mdi-input</v-icon>
+            router to="/login"
+            class="d-none d-sm-flex">
+                <v-icon left>input</v-icon>
                 <span>Logga in</span>
             </v-btn>
             <v-btn
             text
             v-if="loggedIn"
-            router to="/logout">
-                <v-icon left>mdi-output</v-icon>
+            router to="/logout"
+            class="d-none d-sm-flex">
+                <v-icon left>output</v-icon>
                 <span>Logga ut</span>
             </v-btn>
         </v-app-bar>
@@ -74,6 +77,7 @@
 </template>
 
 <script>
+
 export default {
     name: 'Navbar',
     computed: {
@@ -87,17 +91,17 @@ export default {
             items: [
                 {
                     title: 'Omröstning',
-                    icon: 'mdi-gavel',
-                    route: '/'
+                    icon: 'gavel',
+                    route: '/vote'
                 },
                 {
                     title: 'Handlingar',
-                    icon: 'mdi-ballot',
-                    route: '/handlingar'
+                    icon: 'schedule',
+                    route: '/'
                 },
                 {
                     title: 'Admin',
-                    icon: 'mdi-lock',
+                    icon: 'lock',
                     route: '/admin',
                 }
             ],

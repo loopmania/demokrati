@@ -5,9 +5,12 @@ const Handler = (res, id, args) => {
         token: null,
         email: null,
         code: null,
+        ip: null,
         user: null,
         vote: null,
         id: null,
+        title: null,
+        polls: null,
     };
     const handles = [
         {
@@ -16,7 +19,8 @@ const Handler = (res, id, args) => {
             code: 1,
             token: args.token,
             msg: `A validation email has been sent to ${args.email}`,
-            code: args.code
+            code: args.code,
+            ip: args.ip,
         },
         {
             status: 'bad',
@@ -90,7 +94,7 @@ const Handler = (res, id, args) => {
             status: 'success',
             statusCode: 200,
             code: 12,
-            msg: 'Server is online'
+            msg: 'Client authenticated'
         },
         {
             status: 'success',
@@ -111,6 +115,7 @@ const Handler = (res, id, args) => {
             statusCode: 403,
             code: 15,
             voted: true,
+            title: args.title,
             msg: `You have already voted \
             on the currently active poll`
         },
@@ -161,7 +166,62 @@ const Handler = (res, id, args) => {
             statusCode: 400,
             code: 22,
             msg: `There already exists a active poll.`
-        }
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 23,
+            msg: `Client is admin`
+        },
+        {
+            status: 'bad',
+            statusCode: 200,
+            code: 24,
+            msg: `IP address has been switched`
+        },
+        {
+            status: 'bad',
+            statusCode: 200,
+            code: 25,
+            msg: `You have less than 2 minutes left on your access`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 26,
+            msg: `You have more than 2 minutes left on your access`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 27,
+            msg: `You have successfully voted!`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 28,
+            msg: `A poll was created`
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 29,
+            msg: `A poll couldn't be created`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 30,
+            polls: args.polls,
+            msg: `Polls retreived`
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 31,
+            msg: `Something happen with the Polls within the database`
+        },
 
     ];
     id -= 1;

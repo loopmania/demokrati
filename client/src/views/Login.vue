@@ -1,17 +1,5 @@
 <template>
     <div>
-        <v-snackbar
-        v-model="snackbar"
-        top
-        :color="error.color">
-            {{error.text}}
-            <v-btn
-            dark
-            text
-            @click="snackbar = false">
-                Stäng
-            </v-btn>
-        </v-snackbar>
         <v-card flat>
             <v-card-title>
                 <h2>Logga in</h2>
@@ -39,7 +27,7 @@
                         </v-text-field>
                         
                         <v-btn color="primary" @click="activateMail()">Fortsätt</v-btn>
-                        <v-btn text>Avbryt</v-btn>
+                        <v-btn text @click="abort()">Avbryt</v-btn>
                     </v-stepper-content>
                     <v-stepper-step
                     :complete="formStepper.step > 2"
@@ -62,7 +50,7 @@
                             @blur="$v.formStepper.code.$touch()">>
                         </v-text-field>
                         <v-btn color="primary" @click="verifyMail()">Verifiera</v-btn>
-                        <v-btn text>Avbryt</v-btn>
+                        <v-btn text @click="abort()">Avbryt</v-btn>
                     </v-stepper-content>
                 </v-stepper>
             </v-card-text>
@@ -97,15 +85,16 @@ export default {
                 step: 1,
                 email: null,
                 code: null,
-            },
-            error: {
-                        color: null,
-                        text: null
-                    },
-            snackbar: false,
+            }
         }
     },
     methods: {
+        abort() {
+            this.$store.commit('invalidateLogin');
+            this.formStepper.step = 1;
+            this.formStepper.email = '';
+            this.formStepper.code = '';
+        },
         activateMail() {
             if(!this.$v.formStepper.$anyError && this.formStepper.email !== null) {
                 this.$store.dispatch('activate', this.formStepper)
@@ -115,8 +104,18 @@ export default {
                         }
                     })
                     .catch(error => {
-                        this.error = error;
-                        this.snackbar = true;
+                        console.log(error);
+                        this.$store.commit('alertClient', {
+                            color: error.color,
+                            text: error.text,
+                            timeout: 6000,
+                            snackbar: true,
+                            action: {
+                                method: 'exit',
+                                text: 'Stäng'
+                            }
+                        });
+                        
                     });
             } else {
                 this.$v.formStepper.email.$touch();
@@ -133,9 +132,16 @@ export default {
                         }
                     })
                     .catch(error => {
-                        console.log('oppsie');
-                        this.error = error;
-                        this.snackbar = true;
+                        this.$store.commit('alertClient', {
+                            color: error.color,
+                            text: error.text,
+                            timeout: 6000,
+                            snackbar: true,
+                            action: {
+                                method: 'exit',
+                                text: 'Stäng'
+                            }
+                        });
                     });
             } else {
                 this.$v.formStepper.code.$touch();

@@ -20,7 +20,7 @@ const ADMIN = require('./routes/api/admin/rest');
 // database: psql + sequelize
 const db = require('./database/db');
 // Public path
-const publicPath = path.join(__dirname, '..', 'client');
+const publicPath = path.join(__dirname, '..', 'client', 'dist');
 
 db.authenticate()
     .then(() => console.log('Database connected..'))

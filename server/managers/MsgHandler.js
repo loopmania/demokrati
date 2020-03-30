@@ -8,6 +8,7 @@ const Handler = (res, id, args) => {
         ip: null,
         user: null,
         vote: null,
+        votes: null,
         id: null,
         title: null,
         polls: null,
@@ -221,6 +222,31 @@ const Handler = (res, id, args) => {
             statusCode: 400,
             code: 31,
             msg: `Something happen with the Polls within the database`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 32,
+            msg: `The poll ${args.title} has been activated`
+        },
+        {
+            status: 'bad',
+            statusCode: 401,
+            code: 33,
+            msg: 'could not find poll in database'
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 34,
+            votes: args.votes,
+            msg: 'Calculated the results of the poll'
+        },
+        {
+            status: 'bad',
+            statusCode: 401,
+            code: 35,
+            msg: 'could not find results for the active poll'
         },
 
     ];

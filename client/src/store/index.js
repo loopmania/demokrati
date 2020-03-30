@@ -321,6 +321,62 @@ export default new Vuex.Store({
           })
       });
     },
+    activatePoll(context, pollID) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/invokePoll', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': context.getters.token
+          },
+          body: JSON.stringify({
+            pollID: pollID
+          })
+        })
+            .then(res => {
+              return res.json();
+            })
+            .then(data => {
+              if(data.status === 'success') {
+                resolve(data);
+              }
+              if(data.status === 'bad') {
+                reject(data);
+              }
+            })
+            .catch(error => {
+              reject(error);
+            })
+        })
+    },
+    getResults(context, pollID) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/results', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': context.getters.token
+          },
+          body: JSON.stringify({
+            pollID: pollID
+          })
+        })
+            .then(res => {
+              return res.json();
+            })
+            .then(data => {
+              if(data.status === 'success') {
+                resolve(data);
+              }
+              if(data.status === 'bad') {
+                reject(data);
+              }
+            })
+            .catch(error => {
+              reject(error);
+            })
+          })
+    },
     isAdmin(context) {
       return new Promise((resolve, reject) => {
         fetch('/api/admin/me', {

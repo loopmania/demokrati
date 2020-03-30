@@ -17,7 +17,13 @@ new Vue({
     io: io('https://localhost:8443', {
       autoConnect: false,
       secure: true,
+      rejectUnauthorized: false,
     }),
     socket: io.connect()
   },
+  created() {
+    this.socket.on('ping', (msg) => {
+      console.log(msg);
+    })
+  }
 }).$mount('#app')

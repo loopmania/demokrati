@@ -1,6 +1,7 @@
 'use strict'
 const Sequelize = require('sequelize');
 const db = require('../database/db');
+const Votes = require('./Votes');
 
 const Polls = db.define('polls', {
     id: {
@@ -44,37 +45,90 @@ Polls.activate = function(poll) {
             .then(record => {
                 record.active = true;
                 record.save();
-                resolve();
+                resolve(record);
             })
             .catch(error => {
                 reject(error);
             })
     })
 };
-Polls.inactivate = function(poll) {
+Polls.inactivate = function(pollID) {
     return new Promise((resolve, reject) => {
         Polls.findActive()
-        .then(result => {
-            if(result[0].active === true && result[0].id === poll) {
-                Polls.findByPk(poll)
-                    .then(record => {
-                        record.active = false;
-                        record.save();
-                        resolve();
-                    })
-                    .catch(error => {
-                        reject(error);
-                    })
-            } else {
-                reject();
-            }
-        })
-        .catch((error) => {
-            reject(error);
-        })
+            .then(result => {
+                if(result[0].active === true && result[0].id === pollID) {
+                    Polls.findByPk(pollID)
+                        .then(record => {
+                            record.active = false;
+                            record.save();
+                            resolve();
+                        })
+                        .catch(error => {
+                            reject(error);
+                        })
+                } else {
+                    reject();
+                }
+            })
+            .catch((error) => {
+                reject(error);
+            })
     })
-    
 };
+
+Polls.getResults = function(pollID) {
+    return new Promise((resolve, reject) => {
+        Polls.findActive()
+            .then(result => {
+                if(result[0].active === true && result[0].id === pollID) {
+                    Polls.findByPk(pollID)
+                        .then(record => {
+                            //record.active = false;
+                            //record.save();
+                            const candidates = record.candidates;
+                            Votes.findAll({
+                                attributes: ['vote', [Sequelize.fn('COUNT', 'vote'), 'result']],
+                                where: {
+                                    pollId: pollID
+                                },
+                                group: ['vote'],
+                                raw: true,
+                            })
+                                .then(votes => {
+                                    console.log(votes);
+                                    let data = {
+                                        title: record.title,
+                                        candidates: {}
+                                    };
+                                    let i = 0;
+                                    let totalVotes = 0;
+                                    votes.forEach(vote => totalVotes += parseInt(vote.result));
+                                    data.title = record.title;
+                                    candidates.forEach(candidate => {
+                                        let vote = votes[i] !== undefined ? parseInt(votes[i].result) : 0
+                                        data['candidates'][candidate] = {
+                                            votes: vote,
+                                            percentage: totalVotes !== 0 ? +((vote / totalVotes * 100).toFixed(2)) : 0
+                                        }
+                                        i++;
+                                    });
+                                    resolve(data);
+                                })
+                                .catch(error => {
+                                    reject(error);
+                                });
+                        })
+                        .catch(error => {
+                            reject(error);
+                        });
+                }
+            })
+            .catch(error => {
+                reject(error);
+            });
+    
+    })
+}
 
 
 module.exports = Polls;

@@ -42,7 +42,6 @@ router.post('/invalidate', async (req, res) => {
 router.post('/createPoll', (req,res) => {
     const poll = req.body.poll;
     const candidates = `{${poll.candidates.join(',')}}`;
-    console.log(candidates);
     Polls.create({
         title: poll.title,
         candidates: poll.candidates
@@ -67,28 +66,43 @@ router.get('/polls', (req, res) => {
         .catch(() => {
             return MsgHandler(res, 31);
         })
-})
+});
 
 router.put('/invokePoll', (req, res) => {
     const poll = req.body.pollID;
     Polls.findActive()
         .then(error => {
             if(error.length > 0) {
-                console.log(error);
                 return MsgHandler(res, 22);
             }
         })
-        .catch(result => {
+        .catch(() => {
             Polls.activate(poll)
-                .then(() => {
+                .then((result) => {
                     exports.io.to('sm').emit('invokePoll');
-                    return res.sendStatus(200);
+                    exports.io.to('admin').emit('refreshPolls');
+                    return MsgHandler(res, 32, {title: result.title});
                 })
                 .catch(error => {
-                    console.log(error);
+                    return MsgHandler(res, 33);
                 });
         });
 });
+
+router.put('/results', (req, res) => {
+    return new Promise((resolve, reject) => {
+        const poll = req.body.pollID;
+        Polls.getResults(poll)
+            .then(votes => {
+                return MsgHandler(res, 34, { votes: votes});
+            })
+            .catch(error => {
+                return MsgHandler(res, 35);
+            });
+    })
+    
+})
+
 router.put('/inactivate', (req, res) => {
     const poll = req.body.pollID;
     Polls.inactivate(poll)

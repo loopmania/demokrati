@@ -12,6 +12,7 @@ const Handler = (res, id, args) => {
         id: null,
         title: null,
         polls: null,
+        members: null,
     };
     const handles = [
         {
@@ -247,6 +248,44 @@ const Handler = (res, id, args) => {
             statusCode: 401,
             code: 35,
             msg: 'could not find results for the active poll'
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 36,
+            msg: `Member with id ${args.id} session has been validated`
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 37,
+            msg: `Member with id ${args.id} doesn't exist`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 38,
+            members: args.members,
+            msg: `Valid members retreived`
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 39,
+            msg: `Something happen with the Members within the database`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 40,
+            members: args.members,
+            msg: `All members retreived`
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 41,
+            msg: `Something happen with the Members within the database`
         },
 
     ];

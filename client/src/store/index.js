@@ -236,7 +236,7 @@ export default new Vuex.Store({
             if(data.status === "success") {
               resolve(data);
             }
-            
+
           })
       })
     },
@@ -424,6 +424,78 @@ export default new Vuex.Store({
             reject(error);
           });
       });
+    },
+    addValidMember(context, payload) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/addValidMember', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': context.getters.token
+          },
+          body: JSON.stringify({
+            member: payload
+          })
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            if(data.status === 'success') {
+              resolve(data);
+            }
+            if(data.status === 'bad') {
+              reject();
+            }
+          })
+          .catch(error => {
+            reject(error);
+          })
+      })
+    },
+    getValidMembers(context) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/validMembers', {
+          method: 'GET',
+          headers: {
+            'Authorization': context.state.token
+          }
+        })
+          .then(resp => {
+            return resp.json();
+          })
+          .then(data => {
+            if(data.status === "bad") {
+              reject(data);
+            }
+            if(data.status === "success") {
+              resolve(data);
+            }
+
+          })
+      })
+    },
+    getMembers(context) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/members', {
+          method: 'GET',
+          headers: {
+            'Authorization': context.state.token
+          }
+        })
+          .then(resp => {
+            return resp.json();
+          })
+          .then(data => {
+            if(data.status === "bad") {
+              reject(data);
+            }
+            if(data.status === "success") {
+              resolve(data);
+            }
+
+          })
+      })
     },
     checkTime(context) {
       return new Promise((resolve,reject) => {

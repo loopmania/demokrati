@@ -76,6 +76,10 @@ Members.prototype.invalidate = function() {
     this.hasVoted = false;
     this.save();
 };
+Members.prototype.validateMember = function() {
+    this.present = true; // what else?
+    this.save()
+};
 Members.prototype.hasVoted = function() {
     return this.has_voted;
 };

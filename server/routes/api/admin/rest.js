@@ -39,6 +39,45 @@ router.post('/invalidate', async (req, res) => {
     return MsgHandler(res, 19, { id: maybeMember });
 });
 
+router.post('/addValidMember', async (req, res) => {
+    const maybeMember = req.body.id;
+    const member = await Members.findByPk(maybeMember); // OBS har tagit bort await
+    if(!member){
+        return MsgHandler(res, 37, { id: maybeMember });
+    }
+    member.validate();
+    return MsgHandler(res, 36, { id: maybeMember });
+
+    // här måste man skilja på ifall det var en tidigare THS medlem eller ej?? Finns i members redan eller inte
+});
+
+router.get('/validMembers', (req, res) => {
+    Members.findAll({
+        attributes: ['email'],
+        where: {
+            present: true
+        }
+    })
+        .then((members) => {
+            return MsgHandler(res, 38, {members: members});
+        })
+        .catch(() => {
+            return MsgHandler(res, 39);
+        })
+});
+
+router.get('/members', (req, res) => {
+    Members.findAll({
+        attributes: ['email']
+    })
+        .then((members) => {
+            return MsgHandler(res, 40, {members: members});
+        })
+        .catch(() => {
+            return MsgHandler(res, 41);
+        })
+});
+
 router.post('/createPoll', (req,res) => {
     const poll = req.body.poll;
     const candidates = `{${poll.candidates.join(',')}}`;
@@ -53,7 +92,7 @@ router.post('/createPoll', (req,res) => {
         .catch(() => {
             return MsgHandler(res, 29);
         })
-    
+
 });
 
 router.get('/polls', (req, res) => {
@@ -100,7 +139,7 @@ router.put('/results', (req, res) => {
                 return MsgHandler(res, 35);
             });
     })
-    
+
 })
 
 router.put('/inactivate', (req, res) => {

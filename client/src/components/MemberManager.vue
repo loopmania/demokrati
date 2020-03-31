@@ -43,7 +43,10 @@
                   <td>{{row.item.name}}</td>
                   <td>{{row.item.email}}</td>
                   <td>
-                      <v-icon color="red darken-1" @click="invalidateMember(row.item)">directions_walk</v-icon>
+                      <v-btn>
+                          Ta bort
+                          <v-icon color="red darken-1" @click="invalidateMember(row.item)">directions_walk</v-icon>
+                      </v-btn>
                   </td>
                 </tr>
                 </template>

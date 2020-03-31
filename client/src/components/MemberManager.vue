@@ -10,14 +10,14 @@
                 class="d-inline-flex mx-auto pa-md-4"
                 width="400px"
                 :items="ths_members"
-                item-text="name"
+                item-text="email"
                 dense
                 label="Namn"
             ></v-autocomplete>
             <v-btn
                 text
                 class="success"
-                v-on="on">
+                v-on="validateMember()">
                 <span>Lägg till</span>
             </v-btn>
         </v-card>
@@ -40,7 +40,7 @@
             >
             <template v-slot:item="row">
                 <tr :class="getColor(row.item.signedIn)">
-                  <td>{{row.item.name}}</td>
+                  <td>{{/*row.item.name*/ "namn"}}</td>
                   <td>{{row.item.email}}</td>
                   <td>
                       <v-btn>
@@ -63,6 +63,10 @@ export default {
     /*components: {
         NewMemberManual
     },*/
+    created() {
+        this.$root.$data.socket.on('refreshMembers', this.refreshData);
+        this.refreshData();
+    },
     data () {
         return{
             search: '',
@@ -74,30 +78,61 @@ export default {
                     value: 'email'},
                     {text: 'Invalidera',
                     value: 'actions'}],
-            valid_members: [{name: 'Sandra Järkeborn', //byt ut till listan av faktiska medlemmar
-                            email: 'jark@kth.se',
-                            signedIn: true},
-                            {name: 'John Landeholt',
-                            email: 'johnlan@kth.se',
-                            signedIn: false}],
-            ths_members: [{name: 'Anna Saibel', //byt ut till listan av faktiska medlemmar
-                            email: 'saibel@kth.se', // searchname/concatinate
-                            signedIn: "false"},
-                            {name: 'Vera Werner',
-                            email: 'vwerner@kth.se',
-                            signedIn: "false"}],
+            valid_members: [],
+            ths_members: [],
+            newMember: null,
             rowClass: ({ item }) => this.getColor(item.signedIn)
 
         };
     },
     methods: {
-    getColor(signedIn){
-            if (signedIn === true) return "green lighten-5";
-            else return "white";
+        getColor(signedIn){
+                if (signedIn === true) return "green lighten-5";
+                else return "white";
+            },
+        invalidateMember(member){
+            console.log("invalidate")
+            console.log(member)
+            this.$store.dispatch('invalidateMember', member)
+                .then(result => {
+                    console.log(result);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
         },
-    invalidateMember(member){
-        return member
-    }
+        validateMember(){
+            console.log("validate")
+            this.$store.dispatch('addValidMember', this.newMember)
+                .then(() => {
+                    this.newMember = '';
+                })
+                .catch(error => {
+                    // alertClient
+                    this.newMember = '';
+                    console.log(error);
+                })
+        },
+        refreshData() {
+            this.$store.dispatch('getInvalidMembers')
+                .then(result => {
+                    if(result.status === 'success') {
+                        this.ths_members = result.members;
+                    }
+                })
+                .catch(() => {
+                    //
+                })
+            this.$store.dispatch('getValidMembers')
+                    .then(result => {
+                        if(result.status === 'success') {
+                            this.valid_members = result.members;
+                        }
+                    })
+                    .catch(() => {
+                        //
+                    })
+        }
     }
 }
 </script>

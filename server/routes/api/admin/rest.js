@@ -29,23 +29,33 @@ router.get('/me', (req, res) => {
     return MsgHandler(res, 23);
 });
 
-router.post('/invalidate', async (req, res) => {
-    const maybeMember = req.body.id;
-    const member = await Members.findByPk(maybeMember);
+router.post('/invalidateMember', async (req, res) => {
+    const maybeMember = req.body.member;
+    //const member = await Members.findByPk(maybeMember);
+    const member = await Members.findOne({
+        where: {
+            email: maybeMember
+        }
+    });
     if(!member) {
         return MsgHandler(res, 20, { id: maybeMember });
     };
-    member.invalidate();
+    member.invalidateMember();
     return MsgHandler(res, 19, { id: maybeMember });
 });
 
 router.post('/addValidMember', async (req, res) => {
-    const maybeMember = req.body.id;
-    const member = await Members.findByPk(maybeMember); // OBS har tagit bort await
+    const maybeMember = req.body.member;
+    console.log(maybeMember);
+    const member = await Members.findOne({
+        where: {
+            email: maybeMember
+        }
+    });
     if(!member){
         return MsgHandler(res, 37, { id: maybeMember });
     }
-    member.validate();
+    member.validateMember();
     return MsgHandler(res, 36, { id: maybeMember });
 
     // här måste man skilja på ifall det var en tidigare THS medlem eller ej?? Finns i members redan eller inte
@@ -53,7 +63,6 @@ router.post('/addValidMember', async (req, res) => {
 
 router.get('/validMembers', (req, res) => {
     Members.findAll({
-        attributes: ['email'],
         where: {
             present: true
         }
@@ -66,9 +75,11 @@ router.get('/validMembers', (req, res) => {
         })
 });
 
-router.get('/members', (req, res) => {
+router.get('/invalidMembers', (req, res) => {
     Members.findAll({
-        attributes: ['email']
+        where: {
+            present: false
+        }
     })
         .then((members) => {
             return MsgHandler(res, 40, {members: members});

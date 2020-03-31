@@ -453,6 +453,35 @@ export default new Vuex.Store({
           })
       })
     },
+    invalidateMember(context, payload){
+        return new Promise((resolve, reject) => {
+          fetch('/api/admin/invalidateMember', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': context.getters.token
+            },
+            body: JSON.stringify({
+              member: payload
+            })
+          })
+              .then(res => {
+                return res.json();
+              })
+              .then(data => {
+                if(data.status === 'success') {
+                  resolve(data);
+                }
+                if(data.status === 'bad') {
+                  reject(data);
+                }
+              })
+              .catch(error => {
+                reject(error);
+              })
+          })
+
+    },
     getValidMembers(context) {
       return new Promise((resolve, reject) => {
         fetch('/api/admin/validMembers', {
@@ -469,15 +498,16 @@ export default new Vuex.Store({
               reject(data);
             }
             if(data.status === "success") {
+                console.log(data);
               resolve(data);
             }
 
           })
       })
     },
-    getMembers(context) {
+    getInvalidMembers(context) {
       return new Promise((resolve, reject) => {
-        fetch('/api/admin/members', {
+        fetch('/api/admin/invalidMembers', {
           method: 'GET',
           headers: {
             'Authorization': context.state.token

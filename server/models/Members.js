@@ -68,13 +68,17 @@ Members.prototype.setRefreshToken = function(token) {
     this.refresh_token = token;
     this.save();
 };
-Members.prototype.invalidate = function() {
+Members.prototype.invalidateMember = function() {
     this.temp_pass = null;
     this.present = false;
     this.signed_in = false;
     this.refresh_token = null;
     this.hasVoted = false;
     this.save();
+};
+Members.prototype.validateMember = function() {
+    this.present = true; // what else?
+    this.save()
 };
 Members.prototype.hasVoted = function() {
     return this.has_voted;

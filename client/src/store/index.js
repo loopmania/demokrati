@@ -152,7 +152,6 @@ export default new Vuex.Store({
       });
     },
     activate(context, payload) {
-      
       return new Promise((resolve, reject) => {
         fetch('/api/activate', {
           method: 'POST',
@@ -164,7 +163,6 @@ export default new Vuex.Store({
           })
         })
           .then(resp => {
-            console.log('weed');
             return resp.json();
           })
           .then(data => {
@@ -456,6 +454,108 @@ export default new Vuex.Store({
             reject(error);
           });
       });
+    },
+    validateMember(context, payload) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/validateMember', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': context.getters.token
+          },
+          body: JSON.stringify({
+            email: payload // payload is currently only a email
+          })
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            if(data.status === 'success') {
+              resolve();
+            }
+            if(data.status === 'bad') {
+              reject();
+            }
+          })
+          .catch(error => {
+            reject(error);
+          })
+      })
+    },
+    invalidateMember(context, payload){
+        return new Promise((resolve, reject) => {
+          fetch('/api/admin/invalidateMember', {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': context.getters.token
+            },
+            body: JSON.stringify({
+              email: payload.email,
+              name: payload.name
+            })
+          })
+              .then(res => {
+                return res.json();
+              })
+              .then(data => {
+                if(data.status === 'success') {
+                  resolve(data);
+                }
+                if(data.status === 'bad') {
+                  reject(data);
+                }
+              })
+              .catch(error => {
+                reject(error);
+              })
+          })
+
+    },
+    getValidMembers(context) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/validMembers', {
+          method: 'GET',
+          headers: {
+            'Authorization': context.state.token
+          }
+        })
+          .then(resp => {
+            return resp.json();
+          })
+          .then(data => {
+            if(data.status === "bad") {
+              reject(data);
+            }
+            if(data.status === "success") {
+              resolve(data);
+            }
+
+          })
+      })
+    },
+    getInvalidMembers(context) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/invalidMembers', {
+          method: 'GET',
+          headers: {
+            'Authorization': context.state.token
+          }
+        })
+          .then(resp => {
+            return resp.json();
+          })
+          .then(data => {
+            if(data.status === "bad") {
+              reject(data);
+            }
+            if(data.status === "success") {
+              resolve(data);
+            }
+
+          })
+      })
     },
     checkTime(context) {
       return new Promise((resolve,reject) => {

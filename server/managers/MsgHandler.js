@@ -12,6 +12,7 @@ const Handler = (res, id, args) => {
         id: null,
         title: null,
         polls: null,
+        members: null,
     };
     const handles = [
         {
@@ -154,7 +155,7 @@ const Handler = (res, id, args) => {
             status: 'bad',
             statusCode: 400,
             code: 20,
-            msg: `Member with id ${args.id} doesn't exist`
+            msg: `Member with email ${args.email} doesn't exist`
         },
         {
             status: 'bad',
@@ -249,29 +250,49 @@ const Handler = (res, id, args) => {
             msg: 'could not find results for the active poll'
         },
         {
-            // 36
+            status: 'success',
+            statusCode: 200,
+            code: 36,
+            msg: `Member with id ${args.id} session has been validated`
         },
         {
-            // 37
+            status: 'bad',
+            statusCode: 400,
+            code: 37,
+            msg: `There exists no THS-member with email ${args.email}`
         },
         {
-            // 38
+            status: 'success',
+            statusCode: 200,
+            code: 38,
+            members: args.members,
+            msg: `Valid members retreived`
         },
         {
-            // 39
+            status: 'bad',
+            statusCode: 400,
+            code: 39,
+            msg: `Something happen with the Members within the database`
         },
         {
-            // 40
+            status: 'success',
+            statusCode: 200,
+            code: 40,
+            members: args.members,
+            msg: `All members retreived`
         },
         {
-            // 41
+            status: 'bad',
+            statusCode: 400,
+            code: 41,
+            msg: `Something happen with the Members within the database`
         },
         {
             status: 'success',
             statusCode: 200,
             code: 42,
             msg: 'Updated poll'
-        },
+        },   
         {
             status: 'bad',
             statusCode: 400,

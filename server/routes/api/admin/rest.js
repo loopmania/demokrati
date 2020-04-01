@@ -29,14 +29,73 @@ router.get('/me', (req, res) => {
     return MsgHandler(res, 23);
 });
 
-router.post('/invalidate', async (req, res) => {
-    const maybeMember = req.body.id;
-    const member = await Members.findByPk(maybeMember);
-    if(!member) {
-        return MsgHandler(res, 20, { id: maybeMember });
-    };
-    member.invalidate();
-    return MsgHandler(res, 19, { id: maybeMember });
+router.post('/invalidateMember', (req, res) => {
+    const email = req.body.email;
+    // const name = req.body.name;
+    Members.findOne({
+        where: {
+            email: maybeMember
+        }
+    })
+        .then(record => {
+            record.invalidateMember();
+            return MsgHandler(res, 19, { id: record.id });
+        })
+        .catch(() => {
+            return MsgHandler(res, 20, { email: email });
+        })
+   
+});
+
+router.patch('/validateMember', (req, res) => {
+    const email = req.body.email;
+    // const name = req.body.name;
+    Members.findOne({
+        where: {
+            email: email
+        }
+    })
+        .then(record => {
+            record.validateMember();
+            exports.io.to('admin').emit('refreshMembers');
+            return MsgHandler(res, 36, { id: record.id });
+        })
+        .catch(() => {
+            return MsgHandler(res, 37, { email: email });
+        });
+    // här måste man skilja på ifall det var en tidigare THS medlem eller ej?? Finns i members redan eller inte
+});
+
+router.get('/validMembers', (req, res) => {
+    Members.findAll({
+        attributes: ['id','email','present','signed_in'],
+        where: {
+            present: true
+        },
+        raw: true
+    })
+        .then(members => {
+            return MsgHandler(res, 38, { members: members });
+        })
+        .catch(() => {
+            return MsgHandler(res, 39);
+        })
+});
+
+router.get('/invalidMembers', (req, res) => {
+    Members.findAll({
+        attributes: ['id','email','present','signed_in'],
+        where: {
+            present: false
+        },
+        raw: true
+    })
+        .then(members => {
+            return MsgHandler(res, 40, { members: members });
+        })
+        .catch((error) => {
+            return MsgHandler(res, 41);
+        })
 });
 
 router.post('/createPoll', (req,res) => {
@@ -52,7 +111,7 @@ router.post('/createPoll', (req,res) => {
         .catch(() => {
             return MsgHandler(res, 29);
         })
-    
+
 });
 router.patch('/editPoll', (req,res) => {
     const poll = req.body;
@@ -120,7 +179,7 @@ router.put('/results', (req, res) => {
                 return MsgHandler(res, 35);
             });
     })
-    
+
 })
 
 router.put('/inactivate', (req, res) => {

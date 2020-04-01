@@ -78,7 +78,7 @@ router.patch('/validateMember', (req, res) => {
 
 router.get('/validMembers', (req, res) => {
     Members.findAll({
-        attributes: ['id','email','present','signed_in'],
+        attributes: ['id','email','present','signed_in', 'name'],
         where: {
             present: true
         },
@@ -94,7 +94,7 @@ router.get('/validMembers', (req, res) => {
 
 router.get('/invalidMembers', (req, res) => {
     Members.findAll({
-        attributes: ['id','email','present','signed_in'],
+        attributes: ['id','email','present','signed_in', 'name'],
         where: {
             present: false
         },

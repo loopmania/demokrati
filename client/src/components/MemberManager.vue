@@ -20,6 +20,10 @@
                 @click="validateMember()">
                 <span>Lägg till</span>
             </v-btn>
+            <MemberCreator
+            :activator="memberDialog"
+            :memberdata="NewMemberManual"
+            @close="resetDialog"/>
         </v-card>
         <v-card max-width="80%" class="mx-auto">
             <v-card-title class="font-weight-light">
@@ -57,12 +61,12 @@
     </div>
 </template>
 <script>
-//import NewMemberManual from './NewMemberManual';
+import MemberCreator from './MemberCreator';
 export default {
     name: 'MemberManager',
-    /*components: {
-        NewMemberManual
-    },*/
+    components: {
+        MemberCreator
+    },
     created() {
         this.$root.$data.socket.on('refreshMembers', this.refreshData);
         this.refreshData();
@@ -81,15 +85,22 @@ export default {
             valid_members: [],
             ths_members: [],
             newMember: null,
-            rowClass: ({ item }) => this.getColor(item.signedIn)
+            NewMemberManual: {
+                name: '',
+            },
+            memberDialog: false,
 
         };
     },
     methods: {
         getColor(signedIn){
-                if (signedIn === true) return "green lighten-5";
-                else return "white";
-            },
+            if (signedIn === true) return "green lighten-5";
+            else return "white";
+        },
+        resetDialog() {
+            this.memberDialog = false;
+            console.log(this.NewMemberManual);
+        },
         invalidateMember(member){
             console.log("invalidate")
             console.log(member)

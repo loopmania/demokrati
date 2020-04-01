@@ -557,6 +557,14 @@ export default new Vuex.Store({
           })
       })
     },
+    addNewMember(context, payload){
+        // hämta namn via Kottnet-API (payload.email)
+        // lägg till i databas: namn, email
+        // validateMember
+        console.log("hejhopp")
+        console.log(context,payload)
+        return null
+    },
     checkTime(context) {
       return new Promise((resolve,reject) => {
         fetch('/api/timeleft', {

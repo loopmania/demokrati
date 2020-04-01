@@ -40,7 +40,7 @@
             >
             <template v-slot:item="row">
                 <tr :class="getColor(row.item.signedIn)">
-                  <td>{{/*row.item.name*/ "namn"}}</td>
+                  <td>{{row.item.name}}</td>
                   <td>{{row.item.email}}</td>
                   <td>
                       <v-btn @click="invalidateMember(row.item)">

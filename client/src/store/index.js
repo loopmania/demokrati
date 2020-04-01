@@ -236,7 +236,7 @@ export default new Vuex.Store({
             if(data.status === "success") {
               resolve(data);
             }
-            
+
           })
       })
     },

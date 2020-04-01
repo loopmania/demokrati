@@ -4,7 +4,7 @@
         <PollCreator
         :activator="pollDialog"
         :polldata="focusedPoll"
-        @close="pollDialog = false"/>
+        @close="resetDialog"/>
         <Results
         :visible="resultDialog"
         :result="result"
@@ -141,6 +141,10 @@ export default {
                         }
                     })
             }
+        },
+        resetDialog() {
+            this.pollDialog = false;
+            console.log(this.focusedPoll);
         },
         showResult(id) {
             const poll = this.findByID(id);

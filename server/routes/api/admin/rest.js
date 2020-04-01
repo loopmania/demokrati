@@ -32,32 +32,41 @@ router.get('/me', (req, res) => {
 router.patch('/invalidateMember', (req, res) => {
     const email = req.body.email;
     // const name = req.body.name;
-    Members.findOne({
+    Members.update({
+        temp_pass: null,
+        present: false,
+        signed_in: false,
+        refresh_token: null,
+        hasVoted: false
+    },
+    {
         where: {
+            present: true,
             email: email
         }
     })
-        .then(record => {
-            record.invalidateMember();
+        .then(() => {
             exports.io.to('admin').emit('refreshMembers');
             return MsgHandler(res, 19, { id: record.id });
         })
         .catch(() => {
             return MsgHandler(res, 20, { email: email });
-        })
-
+        });
 });
 
 router.patch('/validateMember', (req, res) => {
     const email = req.body.email;
     // const name = req.body.name;
-    Members.findOne({
+    Members.update({
+        present: true
+    },
+    {
         where: {
-            email: email
+            email: email,
+            present: false
         }
     })
-        .then(record => {
-            record.validateMember();
+        .then(() => {
             exports.io.to('admin').emit('refreshMembers');
             return MsgHandler(res, 36, { id: record.id });
         })

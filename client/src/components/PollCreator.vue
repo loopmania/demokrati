@@ -162,7 +162,7 @@ export default {
             },
             set(value) {
                 if(!value) {
-                    this.$emit('close');
+                    this.close();
                 }
             }
         },
@@ -220,6 +220,7 @@ export default {
                 title: '',
                 candidates: []
             },
+            oldPoll: null,
     }),
     watch: {
         model(val, prev) {
@@ -239,7 +240,8 @@ export default {
     },
     methods: {
         close() {
-            this.poll.title = '',
+            this.poll.title = '';
+            this.candidates = this.oldPoll.candidates;
             this.$emit('close');
         },
         submit() {

@@ -81,7 +81,7 @@ export default {
     }),
     methods: {
         submit() {
-            this.$store.dispatch('addValidMember', this.member)
+            this.$store.dispatch('validateMember', this.member)
                 .then(() => {
                     this.member.name = '';
                     this.member.email = '';

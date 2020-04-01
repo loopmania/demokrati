@@ -99,12 +99,12 @@ export default {
             if(!this.$v.formStepper.$anyError && this.formStepper.email !== null) {
                 this.$store.dispatch('activate', this.formStepper)
                     .then(status => {
+                        
                         if(status === 'success') {
                             this.formStepper.step = 2;
                         }
                     })
                     .catch(error => {
-                        console.log(error);
                         this.$store.commit('alertClient', {
                             color: error.color,
                             text: error.text,

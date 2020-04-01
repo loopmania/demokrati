@@ -152,6 +152,7 @@ export default new Vuex.Store({
       });
     },
     activate(context, payload) {
+      
       return new Promise((resolve, reject) => {
         fetch('/api/activate', {
           method: 'POST',
@@ -163,6 +164,7 @@ export default new Vuex.Store({
           })
         })
           .then(resp => {
+            console.log('weed');
             return resp.json();
           })
           .then(data => {
@@ -267,6 +269,36 @@ export default new Vuex.Store({
             reject(error);
           })
       })
+    },
+    editPoll(context, payload) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/editPoll', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': context.getters.token
+          },
+          body: JSON.stringify({
+            id: payload.id,
+            title: payload.title,
+            candidates: payload.candidates
+          })
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            if(data.status === 'success') {
+              resolve(data);
+            }
+            if(data.status === 'bad') {
+              reject(data);
+            }
+          })
+          .catch(error => {
+            reject(error);
+          })
+      });
     },
     getPolls(context) {
       return new Promise((resolve, reject) => {

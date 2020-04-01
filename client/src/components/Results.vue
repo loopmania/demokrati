@@ -45,7 +45,7 @@
             </v-card-text>
             <v-card-actions>
                 <v-btn text
-                @click="visible = false">
+                @click="close">
                     Stäng
                 </v-btn>
             </v-card-actions>
@@ -70,11 +70,9 @@ export default {
         }
     },
     methods: {
-        step(end) {
-            return setInterval(() => {
-                return end-1;
-            }, 250, 5)
-        }
+        close() {
+            this.$emit('close');
+        },
     }
 }
 </script>

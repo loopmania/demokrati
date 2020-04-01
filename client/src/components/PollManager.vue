@@ -1,11 +1,20 @@
 <template>
     <div>
         PollManager
-        <NewPoll/>
+        <PollCreator
+        :activator="pollDialog"
+        :polldata="focusedPoll"
+        @close="pollDialog = false"/>
         <Results
         :visible="resultDialog"
         :result="result"
         @close="resultDialog = false"/>
+        <v-btn
+        text
+        class="success"
+        @click="create()">
+            <span>Ny omröstning</span>
+         </v-btn>
         <v-expansion-panels
         class="py-8"
         accordion
@@ -70,7 +79,7 @@
     </div>
 </template>
 <script>
-import NewPoll from './NewPoll';
+import PollCreator from './PollCreator';
 import Results from './Results';
 
 export default {
@@ -80,14 +89,19 @@ export default {
         this.refreshData();
     },
     components: {
-        NewPoll,
-        Results
+        PollCreator,
+        Results,
     },
     data() {
         return {
             polls: [],
+            focusedPoll: {
+                title: '',
+                candidates: {}
+            },
             panel: null,
             resultDialog: false,
+            pollDialog: false,
             result: {
                 title: null,
                 candidates: {}
@@ -155,8 +169,18 @@ export default {
                     })
             }
         },
+        create() {
+            this.focusedPoll = {
+                title: '',
+                candidates: {}
+            }
+            this.pollDialog = true;
+        },
         change(id) {
-            console.log(id);
+            this.pollDialog = false;
+            const poll = this.findByID(id);
+            this.focusedPoll = poll;
+            this.pollDialog = true;
         },
         remove(id) {
             console.log(id);

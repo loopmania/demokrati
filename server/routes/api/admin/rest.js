@@ -41,7 +41,6 @@ router.post('/invalidate', async (req, res) => {
 
 router.post('/createPoll', (req,res) => {
     const poll = req.body.poll;
-    const candidates = `{${poll.candidates.join(',')}}`;
     Polls.create({
         title: poll.title,
         candidates: poll.candidates
@@ -55,6 +54,27 @@ router.post('/createPoll', (req,res) => {
         })
     
 });
+router.patch('/editPoll', (req,res) => {
+    const poll = req.body;
+    Polls.update({
+        title: poll.title,
+        candidates: poll.candidates,
+    },
+    {
+        where: {
+            id: poll.id
+        }
+}
+    )
+        .then(() => {
+            exports.io.to('admin').emit('refreshPolls');
+            return MsgHandler(res, 42);
+        })
+        .catch(error => {
+            console.log(error);
+            return MsgHandler(res, 43);
+        })
+})
 
 router.get('/polls', (req, res) => {
     Polls.findAll({

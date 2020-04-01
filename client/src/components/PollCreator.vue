@@ -1,19 +1,10 @@
 <template>
     <v-dialog
     max-width="600px"
-    v-model="dialog">
-        <template
-        v-slot:activator="{ on }">
-            <v-btn
-            text
-            class="success"
-            v-on="on">
-                <span>Ny omröstning</span>
-            </v-btn>
-        </template>
+    v-model="show">
         <v-card>
             <v-card-title>
-                Lägg till en ny omröstning
+                {{action}}
             </v-card-title>
             <v-card-text>
                 <v-form
@@ -21,13 +12,13 @@
                     <v-text-field
                     label="titel"
                     placeholder="Är det mötets mening att välja X som Y?"
-                    v-model="poll.title"
+                    v-model="title"
                     :error-messages="titleErrors"
                     required
                     @input="$v.poll.title.$touch()"
                     @blur="$v.poll.title.$touch()"/>
                     <v-combobox
-                    v-model="model"
+                    v-model="candidates"
                     :filter="filter"
                     :hide-no-data="!search"
                     :items="items"
@@ -74,13 +65,21 @@
                     <v-btn
                     text
                     class="success mt-2"
-                    @click.prevent="submit()">
+                    v-if="create"
+                    @click.prevent="submit">
                         Skapa
                     </v-btn>
                     <v-btn
                     text
+                    class="success mt-2"
+                    v-else
+                    @click.prevent="change">
+                        Spara
+                    </v-btn>
+                    <v-btn
+                    text
                     class="mt-2"
-                    @click="dialog = false">
+                    @click="close">
                         Avbryt
                     </v-btn>
                 </v-form>
@@ -94,7 +93,7 @@ import { required } from 'vuelidate/lib/validators'
 
 export default {
     mixins: [validationMixin],
-
+    props: ['activator', 'polldata'],
     validations: {
         poll: {
             title: { 
@@ -113,6 +112,61 @@ export default {
       
     },
     computed: {
+        create: {
+            get() {
+                if(this.polldata.title !== '') {
+                    return false;
+                }
+                return true;
+            }
+        },
+        action: {
+            get() {
+                if(this.polldata.title !== '') {
+                    return 'Redigera omröstning'
+                }
+                return 'Lägg till en ny omröstning'
+            }
+        },
+        title: {
+            get() {
+                if(this.polldata.title !== '') {
+                    return this.polldata.title;
+                }
+                return this.poll.title;
+            },
+            set(value) {
+                this.titleChanges = true;
+                this.poll.title = value;
+            }
+        },
+        candidates: {
+            get() {
+                if(this.polldata.candidates.length > 0) {
+                    
+                    const candidates = this.polldata.candidates;
+                    let data = [];
+                    candidates.forEach(candidate => data.push({text: candidate}));
+                    return data;
+                }
+                return this.model;
+            },
+            set(value) {
+                this.candidateChanges = true;
+                this.model = value;
+            }
+        },
+        show: {
+            get() {
+                return this.activator
+            },
+            set(value) {
+                if(!value) {
+                    this.$emit('close');
+                }
+            }
+        },
+
         titleErrors() {
             const errors = []
             if (!this.$v.poll.title.$dirty) {
@@ -133,8 +187,8 @@ export default {
         }
     },
     data: () => ({
-            activator: null,
             attach: null,
+            open: false,
             index: -1,
             items: [
                 { 
@@ -152,6 +206,8 @@ export default {
             ],
             nonce: 1,
             menu: false,
+            titleChanges: false,
+            candidateChanges: false,
             model: [
                 {
                 text: 'Blankt',
@@ -164,7 +220,6 @@ export default {
                 title: '',
                 candidates: []
             },
-            dialog: false
     }),
     watch: {
         model(val, prev) {
@@ -183,19 +238,96 @@ export default {
       },
     },
     methods: {
+        close() {
+            this.poll.title = '',
+            this.$emit('close');
+        },
         submit() {
-            this.model.forEach(candidate => this.poll.candidates.push(candidate.text));
-            this.$store.dispatch('createPoll', this.poll)
-                .then(() => {
-                    this.poll.title = '';
-                    this.model = [{ text: 'Blankt' }];
-                    this.dialog = false;
-                })
-                .catch(error => {
-                    // alertClient
-                    this.poll.candidates = [];
-                    console.log(error);
-                })
+            if(!this.titleChanges) {
+                this.poll.title = this.title;
+                this.$v.poll.$touch();
+                
+            }
+            if(!this.candidateChanges) {
+                this.model = this.candidates;
+                this.$v.model.$touch();
+            }
+            if(!this.$v.poll.$anyError && !this.$v.model.$anyError) {
+                if(this.candidateChanges) {
+                    this.model.forEach(candidate => this.poll.candidates.push(candidate.text));
+                } else {
+                    this.candidates.forEach(candidate => this.poll.candidates.push(candidate.text));
+                }
+                if(!this.titleChanges) {
+                    this.poll.title = this.title;
+                }
+                this.$store.dispatch('createPoll', this.poll)
+                    .then(() => {
+                        this.poll.title = '';
+                        this.model = [{ text: 'Blankt' }];
+                        this.$emit('close');
+                    })
+                    .catch(error => {
+                        // alertClient
+                        this.poll.candidates = [];
+                        console.log(error);
+                    })
+            }
+            
+        },
+        change() {
+            if(!this.titleChanges) {
+                this.poll.title = this.title;
+                this.$v.poll.$touch();
+                
+            }
+            if(!this.candidateChanges) {
+                this.model = this.candidates;
+                this.$v.model.$touch();
+            }
+                
+
+            if(!this.$v.poll.$anyError && !this.$v.model.$anyError) {
+                if(this.candidateChanges) {
+                    this.model.forEach(candidate => this.poll.candidates.push(candidate.text));
+                } else {
+                    this.candidates.forEach(candidate => this.poll.candidates.push(candidate.text));
+                }
+                if(!this.titleChanges) {
+                    this.poll.title = this.title;
+                }
+                this.poll.id = this.polldata.id;
+                this.$store.dispatch('editPoll', this.poll)
+                    .then((result) => {
+                        this.poll.title = '';
+                        this.model = [{ text: 'Blankt' }];
+                        this.$store.commit('alertClient', {
+                            color: 'success',
+                            text: result.msg,
+                            timeout: 6 * 1000,
+                            snackbar: true,
+                            action: {
+                                method: 'exit',
+                                text: 'Ok'
+                            }
+                        });
+                        this.$emit('close');
+                    })
+                    .catch(error => {
+                        this.poll.candidates = [];
+                        this.$store.commit('alertClient', {
+                            color: 'error',
+                            text: error.msg,
+                            timeout: 6 * 1000,
+                            snackbar: true,
+                            action: {
+                                method: 'exit',
+                                text: 'Ok'
+                            }
+                        });
+                    })
+            }
+            
         },
         filter(item, queryText, itemText) {
             if (item.header) return false

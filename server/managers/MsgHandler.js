@@ -1,7 +1,7 @@
 'use strict'
 
 const Handler = (res, id, args) => {
-    args = args || {
+    args =  args || {
         token: null,
         email: null,
         code: null,
@@ -248,9 +248,39 @@ const Handler = (res, id, args) => {
             code: 35,
             msg: 'could not find results for the active poll'
         },
+        {
+            // 36
+        },
+        {
+            // 37
+        },
+        {
+            // 38
+        },
+        {
+            // 39
+        },
+        {
+            // 40
+        },
+        {
+            // 41
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 42,
+            msg: 'Updated poll'
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 43,
+            msg: 'Could not find poll'
+        },
 
     ];
-    id -= 1;
+    id-=1;
     const handle = handles[id];
     const statusCode = handle.statusCode;
     return res.status(statusCode).json(handle);

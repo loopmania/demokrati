@@ -29,22 +29,23 @@ router.get('/me', (req, res) => {
     return MsgHandler(res, 23);
 });
 
-router.post('/invalidateMember', (req, res) => {
+router.patch('/invalidateMember', (req, res) => {
     const email = req.body.email;
     // const name = req.body.name;
     Members.findOne({
         where: {
-            email: maybeMember
+            email: email
         }
     })
         .then(record => {
             record.invalidateMember();
+            exports.io.to('admin').emit('refreshMembers');
             return MsgHandler(res, 19, { id: record.id });
         })
         .catch(() => {
             return MsgHandler(res, 20, { email: email });
         })
-   
+
 });
 
 router.patch('/validateMember', (req, res) => {

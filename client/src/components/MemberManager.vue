@@ -43,7 +43,7 @@
                   <td>{{/*row.item.name*/ "namn"}}</td>
                   <td>{{row.item.email}}</td>
                   <td>
-                      <v-btn>
+                      <v-btn @click="invalidateMember(row.item)">
                           Ta bort
                           <v-icon color="red darken-1" @click="invalidateMember(row.item)">directions_walk</v-icon>
                       </v-btn>
@@ -116,6 +116,7 @@ export default {
                 })
         },
         refreshData() {
+            console.log("refresh")
             this.$store.dispatch('getInvalidMembers')
                 .then(result => {
                     if(result.status === 'success') {

@@ -108,6 +108,19 @@ router.get('/invalidMembers', (req, res) => {
         })
 });
 
+router.post('/createMember', (req, res) => {
+    Members.create({
+        email: req.body.email,
+        name: req.body.name
+    })
+        .then(() => {
+            return MsgHandler(res, 44);
+        })
+        .catch(() => {
+            return MsgHandler(res, 45);
+        })
+});
+
 router.post('/createPoll', (req,res) => {
     const poll = req.body.poll;
     Polls.create({

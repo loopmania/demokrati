@@ -292,12 +292,24 @@ const Handler = (res, id, args) => {
             statusCode: 200,
             code: 42,
             msg: 'Updated poll'
-        },   
+        },
         {
             status: 'bad',
             statusCode: 400,
             code: 43,
             msg: 'Could not find poll'
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 44,
+            msg: 'A member was created'
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 45,
+            msg: 'A member could not be created'
         },
 
     ];

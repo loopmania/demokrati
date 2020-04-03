@@ -116,6 +116,9 @@ export default {
             console.log("validate")
             // Currently this.newMember will only be the email.
             // Necessary changes will have to be in place here
+
+            //const email = this.newMember.split('(')[1]; // extract email from format "Name (email)"
+            //email = email.replace(")", "");
             this.$store.dispatch('validateMember', this.newMember)
                 .then(() => {
                     this.newMember = '';

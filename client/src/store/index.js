@@ -558,12 +558,45 @@ export default new Vuex.Store({
       })
     },
     addNewMember(context, payload){
-        // hämta namn via Kottnet-API (payload.email)
-        // lägg till i databas: namn, email
-        // validateMember
-        console.log("hejhopp")
-        console.log(context,payload)
-        return null
+        const kthmail = payload.email.replace('@kth.se','');
+        console.log(kthmail)
+
+        return new Promise((resolve, reject) => {
+            fetch('https://api.kottnet.net/kth/' + kthmail) // gets name from email
+            .then(result => {
+                if (result.status === 200){
+                    result.json().then(data => {
+                        const name = data.name;
+                        fetch('/api/admin/createMember', { // adds new member to the database
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': context.getters.token
+                            },
+                            body: JSON.stringify({
+                              name: name,
+                              email: payload.email
+                            })
+                        })
+                        .then(res => {
+                          return res.json();
+                        })
+                        .then(data => {
+                            if(data.status === 'success') {
+                                context.dispatch("validateMember", payload.email); //validates the member
+                                resolve();
+                            }
+                            if (data.status === 'bad'){
+                                reject(data);
+                            }
+                        })
+                        .catch(error => {
+                            reject(error);
+                        })
+                    })
+                }
+            })
+        })
     },
     checkTime(context) {
       return new Promise((resolve,reject) => {

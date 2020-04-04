@@ -19,6 +19,7 @@ export default new Vuex.Store({
         text: null
       },
     },
+    validMemberList: [],
     actions: 'Lägg till en ny omröstning',
     pollID: null,
     title: '',
@@ -41,6 +42,9 @@ export default new Vuex.Store({
     },
     refreshToken(state) {
       return state.refreshToken;
+    },
+    members(state){
+        return state.validMemberList;
     },
     actions(state) {
       return state.actions;
@@ -86,7 +90,7 @@ export default new Vuex.Store({
       } else {
         state.candidates = payload;
       }
-      
+
     },
     addCandidate(state, payload) {
       state.candidates.push({text: payload});
@@ -101,7 +105,7 @@ export default new Vuex.Store({
         state.candidates = [
           {
             text: 'Blankt'
-          }, 
+          },
           {
             text: 'Avslag'
           }];
@@ -141,7 +145,11 @@ export default new Vuex.Store({
     },
     alertClient(state, payload) {
       state.error = payload;
+    },
+    populateMemberList(state, payload) {
+        state.validMemberList = payload;
     }
+
   },
   actions: {
     destroyToken(context) {

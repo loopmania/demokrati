@@ -45,7 +45,7 @@ router.post('/activate', (req, res) => {
     const maybeEmail = req.body.email;
     /*
     * Checks if email of member is
-    * apart of database of valid 
+    * apart of database of valid
     * THS members-register
     */
     Members.findByEmail(maybeEmail)
@@ -119,6 +119,7 @@ router.post('/verify', auth, (req, res) => {
         where: {
             email: email,
             present: req.user.admin !== undefined ? false : true,
+
             temp_pass: tempCode
         }
     })
@@ -261,3 +262,4 @@ const refresher = (req, res) => {
 }
 
 module.exports = router;
+

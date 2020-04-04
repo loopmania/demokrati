@@ -23,10 +23,9 @@
                     placeholder="namn@kth.se"
                     filled
                     v-model="member.email"
-                    :error-messages="emailErrors"
+                    :rules='emailRules'
                     required
-                    @input="$v.formStepper.email.$touch()"
-                    @blur="$v.formStepper.email.$touch()"/>
+                    />
                     <v-btn
                     text
                     class="success mt-2"
@@ -60,24 +59,38 @@ export default {
         }
     },
     computed: {
-        emailErrors() {
-            const errors = []
-            if (!this.$v.formStepper.email.$dirty) {
-                return errors;
+        members: {
+            get(){
+                return this.$store.getters.members;
             }
-            !this.$v.formStepper.email.email && errors.push('Måste vara en riktig KTH-email');
-            !this.$v.formStepper.email.required && errors.push('en KTH-email krävs');
-            return errors;
         }
     },
     data: () => ({
             member: {
                 email: ''
             },
-            dialog: false
+            dialog: false,
+            emailRules: [
+                v => !!v || "En KTH-email krävs",
+                v => /.+@kth\.se$/.test(v) || "Måste vara en riktig KTH-email"
+            ],
     }),
     methods: {
         submit() {
+            let ths_emails = this.members.map(({ email }) => email);
+            if (ths_emails.includes(this.member.email)){
+                this.$store.commit('alertClient', {
+                    color: 'error',
+                    text: 'Personen du försöker lägga till finns redan i listan av THS-medlemmar.',
+                    timeout: 6000,
+                    snackbar: true,
+                    action: {
+                        method: 'exit',
+                        text: 'Stäng'
+                    }
+                });
+                return
+            }
             this.$store.dispatch('addNewMember', this.member)
                 .then(() => {
                     this.member.email = '';

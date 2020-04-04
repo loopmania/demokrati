@@ -46,7 +46,8 @@ router.patch('/invalidateMember', (req, res) => {
     })
         .then(() => {
             exports.io.to('admin').emit('refreshMembers');
-            return MsgHandler(res, 19, { id: record.id });
+            console.log("emit refresh")
+            return MsgHandler(res, 19, { email: email });
         })
         .catch(() => {
             return MsgHandler(res, 20, { email: email });
@@ -55,7 +56,7 @@ router.patch('/invalidateMember', (req, res) => {
 
 router.patch('/validateMember', (req, res) => {
     const email = req.body.email;
-    // const name = req.body.name;
+
     Members.update({
         present: true
     },
@@ -67,12 +68,11 @@ router.patch('/validateMember', (req, res) => {
     })
         .then(() => {
             exports.io.to('admin').emit('refreshMembers');
-            return MsgHandler(res, 36, { id: record.id });
+            return MsgHandler(res, 36, { email: email });
         })
         .catch(() => {
             return MsgHandler(res, 37, { email: email });
         });
-    // här måste man skilja på ifall det var en tidigare THS medlem eller ej?? Finns i members redan eller inte
 });
 
 router.get('/validMembers', (req, res) => {
@@ -108,17 +108,37 @@ router.get('/invalidMembers', (req, res) => {
 });
 
 router.post('/createMember', (req, res) => {
-    const searchname = req.body.name + ' (' + req.body.email + ')';
-    Members.create({
-        email: req.body.email,
-        name: req.body.name,
-        searchname: searchname
-    })
-        .then(() => {
-            return MsgHandler(res, 44);
+    // TODO: kontrollera att den inte redan finns i databasen
+
+    // FindMemberByEmail: return MsgHandler (finns redan i databasen)
+    // catch - gör nedan
+    console
+
+    Members.findByEmail(req.body.email)
+        .then(member  => {
+            if (!member){
+                console.log("hittade inte")
+                const searchname = req.body.name + ' (' + req.body.email + ')';
+                Members.create({
+                    email: req.body.email,
+                    name: req.body.name,
+                    searchname: searchname
+                })
+                    .then(() => {
+                        return MsgHandler(res, 44);
+                    })
+                    .catch(() => {
+                        return MsgHandler(res, 45);
+                    })
+            }
+            else{
+                console.log("hittade " + req.body.email)
+                return MsgHandler(res, 46);
+            }
+
         })
         .catch(() => {
-            return MsgHandler(res, 45);
+            return MsgHandler(res, 48);
         })
 });
 

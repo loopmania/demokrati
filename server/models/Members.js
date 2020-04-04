@@ -48,6 +48,17 @@ Members.findByEmail = function(email) {
         }
     });
 };
+Members.resetVote = function() {
+    Members.update({
+        has_voted: false
+    },
+    {
+        where: {
+            has_voted: true
+        }
+    })
+}
+
 
 Members.prototype.activate = async function() {
     /*

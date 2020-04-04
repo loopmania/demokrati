@@ -17,46 +17,37 @@ export default {
     Navbar, Alerter
   },
   beforeDestroy() {
-    //this.$root.$data.socket.removeAllListeners();
+    this.$root.$data.socket.removeAllListeners();
   },
   created() {
-    this.$root.$data.socket.on('connect', this.findAuth);
+    this.$root.$data.socket.on('connect', this.findMe);
     this.$root.$data.socket.on('refresh', this.refresh);
   },
   methods: {
-    findAuth() {
-      this.$store.dispatch('authenticate')
+    findMe() {
+      this.$store.dispatch('findMe')
         .then(result => {
-          if(result.status === 'success') {
-            if(![8, 13].includes(result.code)) {
-                this.$store.dispatch('isAdmin')
-                  .then(result => {
-                    if(result.status === 'success') {
-                      this.$root.$data.socket.emit('join', 'admin');
-                      this.$root.$data.socket.emit('join', 'sm');
-                    } else {
-                      this.$root.$data.socket.emit('join', 'sm');
-                    }
-                  })
-                  .catch(() => {
-                    //
-                  });
+          if(result.status === 'success' && result.user !== undefined) {
+            this.$root.$data.socket.emit('join', 'sm');
+            if(result.user.admin === true) {
+              this.$root.$data.socket.emit('join', 'admin');
             }
           }
         })
         .catch(error => {
-          this.$store.commit('alertClient', {
-            color: 'error',
-            text: error,
-            timeout: 6000,
-            snackbar: true,
-            action: {
-              method: 'exit',
-              text: 'Stäng'
-            }
-          });
-          this.$store.dispatch('destroyToken');
-        });
+          if(error.status) {
+            this.$store.commit('alertClient', {
+              color: 'error',
+              text: error.msg,
+              timeout: 6000,
+              snackbar: true,
+              action: {
+                method: 'exit',
+                text: 'Stäng'
+              }
+            });
+          }
+        })
     },
     refresh() {
       this.$store.dispatch('checkTime')

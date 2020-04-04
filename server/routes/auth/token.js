@@ -29,21 +29,23 @@ function auth(req, res, next) {
     };
 };
 
-async function isMember(req, res, next) {
+function isMember(req, res, next) {
     if(!req.user) {
         return MsgHandler(res, 9);
     };
-    const member = await Members.findByEmail(req.user.email,{
+    Members.findByEmail(req.user.email,{
         where: {
             present: false, // change to true
             signed_in: false // change to true
         }
-    }); // should find a better way to store frequently asked data
-    if(!member) {
-        return MsgHandler(res, 10);
-    };
-    req.member = member;
-    next();
+    })
+        .then(member => {
+            req.member = member;
+            next();
+        })
+        .catch(() => {
+            return MsgHandler(res, 10);
+        })
 }
 
 module.exports.auth = auth;

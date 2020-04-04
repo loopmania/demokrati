@@ -67,7 +67,9 @@ const secureServer = https.createServer(httpsOptions, app)
         console.log(`Secure Backend started on port ${app.get('port')}`);
     });
 
-const io = socket(secureServer);
+const io = socket(secureServer, {
+    pingTimeout: 60000,
+});
 ADMIN.init({io});
 
 io.on('connection', (socket) => {

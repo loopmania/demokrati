@@ -22,7 +22,18 @@ exports.io = undefined;
 const {auth, isMember} = require('../auth/token');
 
 router.get('/me', auth, isMember, (req, res) => {
-    return MsgHandler(res, 12);
+    const admin = req.member.isAdmin();
+
+    let user = {
+                    present: req.member.present,
+                    signedIn: req.member.signed_in,
+                    hasVoted: req.member.has_voted,
+                };
+    if(admin) {
+        user.admin = admin;
+    }
+
+    return MsgHandler(res, 12, {user: user});
 });
 
 router.post('/activate', async (req, res) => {
@@ -88,30 +99,42 @@ router.post('/activate', async (req, res) => {
     });
 });
 
-router.post('/verify', auth, async (req, res) => {
+router.post('/verify', auth, (req, res) => {
     const {Error} = validCode(req.body);
     if(Error) {
         return MsgHandler(res, 7);
     };
     const tempCode = req.body.code;
     const email = req.user.email;
-    const member = await Members.findOne({
+    Members.findOne({
         where: {
             email: email,
             present: true,
             temp_pass: tempCode
         }
-    });
-    if(!member) {
-        return MsgHandler(res, 7);
-    };
-    await member.signIn();
-    const user = req.user;
-    delete user.exp;
-    jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, async (err, token) => {
-        await member.setRefreshToken(token);
-        return MsgHandler(res, 6, {token: token, user: user}); // Remove user, not necessary
-    });
+    })
+        .then(member => {
+            member.signIn();
+            const user = req.user;
+            delete user.exp;
+            let localUser = {
+                present: member.present,
+                signedIn: member.signed_in,
+                hasVoted: member.has_voted,
+            };
+            if(member.isAdmin()) {
+                localUser.admin = true;
+            }
+            
+            jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, async (err, token) => {
+                await member.setRefreshToken(token);
+                return MsgHandler(res, 6, {token: token, user: localUser});
+            })
+        })
+        .catch(() => {
+            
+            return MsgHandler(res, 7);
+        })
 });
 
 router.patch('/refresh', auth, isMember, (req, res) => {
@@ -128,13 +151,23 @@ router.patch('/refresh', auth, isMember, (req, res) => {
             email: user.email,
             ip: user.ip
         };
-        if(member.isAdmin()) {
+        const admin = req.member.isAdmin();
+        if(admin) {
             payload.admin = {
                 foo: 'bar'
             };
         };
+        
+        let localUser = {
+            present: req.member.present,
+            signedIn: req.member.signed_in,
+            hasVoted: req.member.has_voted,
+        };
+        if(admin) {
+            localUser.admin = admin;
+        }
         jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
-            return MsgHandler(res, 11, { token: token });
+            return MsgHandler(res, 11, { token: token, user: localUser });
         });
     });
 });

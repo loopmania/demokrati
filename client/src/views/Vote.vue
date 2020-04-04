@@ -125,11 +125,13 @@ export default {
             console.log('looking for vote');
             this.$store.dispatch('findVote')
                 .then(data => {
+                    
                     if(data.code === 13) {
                         this.waiting = true;
                         this.resetVote();
                     } else {
                         this.waiting = false;
+                        this.alreadyVoted = false;
                         this.title = data.vote.title;
                         this.id = data.vote.id;
                         this.candidates = data.vote.candidates;

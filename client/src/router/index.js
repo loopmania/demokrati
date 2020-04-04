@@ -19,27 +19,11 @@ const routes = [
     name: 'Vote',
     component: Vote,
     beforeEnter: (to, from, next) => {
-      store.dispatch('isMember')
-        .then(result => {
-          console.log(result);
-          if(result.status === 'success') {
-            if(result.code !== 12) {
-              store.commit('alertClient', {
-              color: 'warning',
-              text: `För att kunna rösta, krävs \
-              det att man är inloggad.`,
-              timeout: 6000,
-              snackbar: true,
-              action: {
-                method: 'exit',
-                text: 'Stäng'
-              }
-            });
-            next('/Login');
-          } else {
-            next();
-          }
-        } else {
+      store.dispatch('isAuthenticated', {needAdmin: false})
+        .then(() => {
+          next();
+        })
+        .catch(() => {
           store.commit('alertClient', {
             color: 'warning',
             text: `För att kunna rösta, krävs \
@@ -51,9 +35,8 @@ const routes = [
               text: 'Stäng'
             }
           });
-          next('/Login');
-        }
-      });
+          next('/Login')
+        })
     }
   },
   {
@@ -61,74 +44,40 @@ const routes = [
     name: 'Login',
     component: Login,
     beforeEnter: (to, from, next) => {
-      store.dispatch('isMember')
-        .then(result => {
-          if(result.status === 'success') {
-            if(result.code !== 12) {
-              next();
-            } else {
-              next(from.path);
-            }
-          } else {
-            next(from.path);
-          }
-        });
+      store.dispatch('isAuthenticated', {needAdmin: false})
+        .then(() => {
+          next(from.path);
+        })
+        .catch(() => {
+          next();
+        })
       }
+      
   },
   {
     path: '/Logout',
     name: 'Logout',
     component: Logout,
     beforeEnter: (to, from, next) => {
-      store.dispatch('isMember')
-        .then(result => {
-          if(result.status === 'success') {
-            if(result.code === 12) {
-              next();
-            } else {
-              next(from.path);
-            }
-          } else {
-            next(from.path);
-          }
+      store.dispatch('isAuthenticated', {needAdmin: false})
+        .then(() => {
+          next();
         })
-    }
+        .catch(() => {
+          next(from.path);
+        })
+      }
   },
   {
     path: '/Admin',
     name: 'Admin',
     component: Admin,
     beforeEnter: (to, from, next) => {
-      store.dispatch('isAdmin')
+      store.dispatch('isAuthenticated', {needAdmin: true})
         .then(result => {
-          if(result.status === 'success') {
-            if(result.code === 23) {
-              next();
-            } else {
-              store.commit('alertClient', {
-                color: 'error',
-                text: `Ditt client saknar adminrättigheter`,
-                timeout: 6000,
-                snackbar: true,
-                action: {
-                  method: 'exit',
-                  text: 'Stäng'
-                }
-              });
-              next(from.path);
-            }
-            
+          if(result.admin === true) {
+            next();
           } else {
-            store.commit('alertClient', {
-              color: 'error',
-              text: result.msg,
-              timeout: 6000,
-              snackbar: true,
-              action: {
-                method: 'exit',
-                text: 'Stäng'
-              }
-            });
             next(from.path);
           }
         })
@@ -145,7 +94,7 @@ const routes = [
           });
           next(from.path);
         })
-    }
+      }
   },
 ]
 

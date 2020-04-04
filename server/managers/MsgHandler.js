@@ -58,7 +58,7 @@ const Handler = (res, id, args) => {
             statusCode: 200,
             refreshToken: args.token,
             msg: 'Welcome',
-            payload: args.user
+            user: args.user
         },
         {
             status: 'bad',
@@ -90,12 +90,14 @@ const Handler = (res, id, args) => {
             statusCode: 200,
             code: 11,
             token: args.token,
+            user: args.user,
             msg: `Token extended with 25 minutes`
         },
         {
             status: 'success',
             statusCode: 200,
             code: 12,
+            user: args.user,
             msg: 'Client authenticated'
         },
         {
@@ -312,10 +314,17 @@ const Handler = (res, id, args) => {
             msg: 'A member could not be created'
         },
         {
+<<<<<<< HEAD
             status: 'bad',
             statusCode: 400,
             code: 46,
             msg: `Member already in database`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 47,
+            msg: `Successfully removed poll with id ${args.id}`
         },
         {
             status: 'bad',
@@ -323,6 +332,10 @@ const Handler = (res, id, args) => {
             code: 50,
             msg: `Something happened with the Members within the database`
         },
+=======
+            // code 46
+        },
+
 
     ];
     id-=1;

@@ -20,9 +20,13 @@
                 class="px-3">
                     <v-text-field
                     label="KTH-email"
+                    placeholder="namn@kth.se"
+                    filled
                     v-model="member.email"
                     :error-messages="emailErrors"
-                    required/>
+                    required
+                    @input="$v.formStepper.email.$touch()"
+                    @blur="$v.formStepper.email.$touch()"/>
                     <v-btn
                     text
                     class="success mt-2"
@@ -42,28 +46,29 @@
 </template>
 <script>
 import { validationMixin } from 'vuelidate'
-import { required } from 'vuelidate/lib/validators'
+import { required, email } from 'vuelidate/lib/validators'
 
 export default {
     mixins: [validationMixin],
 
     validations: {
-        member: {
+        formStepper: {
             email: {
                 required,
-            },
-        },
+                email,
+            }
+        }
     },
     computed: {
         emailErrors() {
-            //To do: kontrollera att mailen har rätt format!!
             const errors = []
-            if (!this.$v.member.email.$dirty) {
+            if (!this.$v.formStepper.email.$dirty) {
                 return errors;
             }
-            !this.$v.poll.member.email && errors.push('en mail krävs');
+            !this.$v.formStepper.email.email && errors.push('Måste vara en riktig KTH-email');
+            !this.$v.formStepper.email.required && errors.push('en KTH-email krävs');
             return errors;
-        },
+        }
     },
     data: () => ({
             member: {

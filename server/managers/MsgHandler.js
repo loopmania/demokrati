@@ -314,7 +314,6 @@ const Handler = (res, id, args) => {
             msg: 'A member could not be created'
         },
         {
-<<<<<<< HEAD
             status: 'bad',
             statusCode: 400,
             code: 46,
@@ -332,11 +331,6 @@ const Handler = (res, id, args) => {
             code: 50,
             msg: `Something happened with the Members within the database`
         },
-=======
-            // code 46
-        },
-
-
     ];
     id-=1;
     const handle = handles[id];

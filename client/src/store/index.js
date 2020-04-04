@@ -19,16 +19,13 @@ export default new Vuex.Store({
         text: null
       },
     },
-<<<<<<< HEAD
-    validMemberList: []
-=======
+    validMemberList: [],
     actions: 'Lägg till en ny omröstning',
     pollID: null,
     title: '',
     candidates: [],
     showPollCreator: false,
     newPoll: true,
->>>>>>> abc18369838980f8b91dace9ea81e0b5a77047ef
   },
   getters: {
     loggedIn(state) {
@@ -46,10 +43,9 @@ export default new Vuex.Store({
     refreshToken(state) {
       return state.refreshToken;
     },
-<<<<<<< HEAD
     members(state){
         return state.validMemberList;
-=======
+    },
     actions(state) {
       return state.actions;
     },
@@ -67,7 +63,6 @@ export default new Vuex.Store({
     },
     newPoll(state) {
       return state.newPoll;
->>>>>>> abc18369838980f8b91dace9ea81e0b5a77047ef
     }
   },
   mutations: {
@@ -88,7 +83,7 @@ export default new Vuex.Store({
       } else {
         state.candidates = payload;
       }
-      
+
     },
     addCandidate(state, payload) {
       state.candidates.push({text: payload});
@@ -103,7 +98,7 @@ export default new Vuex.Store({
         state.candidates = [
           {
             text: 'Blankt'
-          }, 
+          },
           {
             text: 'Avslag'
           }];

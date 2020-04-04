@@ -1,16 +1,20 @@
 <template>
     <div>
-        <v-card max-width="80%" class="ma-auto" >
+        <v-card max-width="80%" class="mx-auto my-4" >
             <v-card-title class="font-weight-light">
-                Lägg till ny medlem
+                Lägg till ny medlem som närvarande
                 <v-spacer></v-spacer>
             </v-card-title>
+            <p class="text-left pl-md-4">
+                Sök på personens namn eller email. <br/>
+                Finns den inte i listan måste kårmedlemsskap kontrolleras manuellt, lägg sedan till personen manuellt.
+            </p>
             <v-autocomplete
                 v-model="newMember"
                 class="d-inline-flex mx-auto pa-md-4"
                 width="400px"
                 :items="ths_members"
-                item-text="email"
+                item-text="searchname"
                 dense
                 label="Namn"
             ></v-autocomplete>
@@ -27,7 +31,7 @@
         </v-card>
         <v-card max-width="80%" class="mx-auto">
             <v-card-title class="font-weight-light">
-                Validerade Medlemmar
+                Närvarande medlemmar
                 <v-spacer></v-spacer>
                 <v-text-field
                     v-model="search"
@@ -58,6 +62,7 @@
             </v-data-table>
 
         </v-card>
+        <br/>
     </div>
 </template>
 <script>
@@ -114,12 +119,10 @@ export default {
         },
         validateMember(){
             console.log("validate")
-            // Currently this.newMember will only be the email.
-            // Necessary changes will have to be in place here
-
-            //const email = this.newMember.split('(')[1]; // extract email from format "Name (email)"
-            //email = email.replace(")", "");
-            this.$store.dispatch('validateMember', this.newMember)
+            var email = this.newMember.split('(')[1]; // extract email from format "Name (email)"
+            email = email.replace(")", "");
+            console.log(email);
+            this.$store.dispatch('validateMember', email)
                 .then(() => {
                     this.newMember = '';
                 })
@@ -135,6 +138,7 @@ export default {
                 .then(result => {
                     if(result.status === 'success') {
                         this.ths_members = result.members;
+                        console.log("invalid members:")
                         console.log(this.ths_members);
                     }
                 })
@@ -145,6 +149,7 @@ export default {
                     .then(result => {
                         if(result.status === 'success') {
                             this.valid_members = result.members;
+                            console.log("valid members:")
                             console.log(this.valid_members);
                         }
                     })

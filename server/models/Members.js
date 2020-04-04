@@ -15,6 +15,9 @@ const Members = db.define('members', {
     name: {
         type: Sequelize.STRING
     },
+    searchname:{
+        type: Sequelize.STRING
+    },
     temp_pass: {
         type: Sequelize.STRING
     },

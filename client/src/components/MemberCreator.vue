@@ -56,7 +56,7 @@ export default {
     },
     computed: {
         emailErrors() {
-            // DESSA ERRORS FUNKAR INTE RIKTIGT!
+            //To do: kontrollera att mailen har rätt format!!
             const errors = []
             if (!this.$v.member.email.$dirty) {
                 return errors;
@@ -80,6 +80,7 @@ export default {
                 })
                 .catch(error => {
                     // alertClient
+                    this.member.email = '';
                     console.log(error);
                 })
         },

@@ -300,8 +300,8 @@ const Handler = (res, id, args) => {
             msg: 'Could not find poll'
         },
         {
-            status: 'bad',
-            statusCode: 400,
+            status: 'success',
+            statusCode: 200,
             code: 44,
             msg: 'A member was created'
         },

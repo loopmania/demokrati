@@ -456,6 +456,7 @@ export default new Vuex.Store({
       });
     },
     validateMember(context, payload) {
+        // TODO:
       return new Promise((resolve, reject) => {
         fetch('/api/admin/validateMember', {
           method: 'PATCH',
@@ -558,8 +559,8 @@ export default new Vuex.Store({
       })
     },
     addNewMember(context, payload){
+        // TODO: kontrollera att personen inte redan är medlem!
         const kthmail = payload.email.replace('@kth.se','');
-        console.log(kthmail)
 
         return new Promise((resolve, reject) => {
             fetch('https://api.kottnet.net/kth/' + kthmail) // gets name from email

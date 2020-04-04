@@ -94,7 +94,7 @@ router.get('/validMembers', (req, res) => {
 
 router.get('/invalidMembers', (req, res) => {
     Members.findAll({
-        attributes: ['id','email','present','signed_in', 'name'],
+        attributes: ['id','email','present','signed_in', 'name', 'searchname'],
         where: {
             present: false
         },
@@ -109,9 +109,11 @@ router.get('/invalidMembers', (req, res) => {
 });
 
 router.post('/createMember', (req, res) => {
+    const searchname = req.body.name + ' (' + req.body.email + ')';
     Members.create({
         email: req.body.email,
-        name: req.body.name
+        name: req.body.name,
+        searchname: searchname
     })
         .then(() => {
             return MsgHandler(res, 44);

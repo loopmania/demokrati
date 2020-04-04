@@ -294,7 +294,7 @@ const Handler = (res, id, args) => {
             statusCode: 200,
             code: 42,
             msg: 'Updated poll'
-        },   
+        },
         {
             status: 'bad',
             statusCode: 400,
@@ -305,8 +305,23 @@ const Handler = (res, id, args) => {
             status: 'success',
             statusCode: 200,
             code: 44,
-            msg: `Successfully removed poll with id ${args.id}`
+            msg: 'A member was created'
         },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 45,
+            msg: 'A member could not be created'
+        },
+        {
+            // code 46
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 47,
+            msg: `Successfully removed poll with id ${args.id}`
+        }
 
     ];
     id-=1;

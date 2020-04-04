@@ -293,7 +293,7 @@ export default new Vuex.Store({
             if(data.status === "success") {
               resolve(data);
             }
-            
+
           })
       })
     },
@@ -527,6 +527,7 @@ export default new Vuex.Store({
       })
     },
     validateMember(context, payload) {
+        // TODO:
       return new Promise((resolve, reject) => {
         fetch('/api/admin/validateMember', {
           method: 'PATCH',
@@ -627,6 +628,47 @@ export default new Vuex.Store({
 
           })
       })
+    },
+    addNewMember(context, payload){
+        // TODO: kontrollera att personen inte redan är medlem!
+        const kthmail = payload.email.replace('@kth.se','');
+
+        return new Promise((resolve, reject) => {
+            fetch('https://api.kottnet.net/kth/' + kthmail) // gets name from email
+            .then(result => {
+                if (result.status === 200){
+                    result.json().then(data => {
+                        const name = data.name;
+                        fetch('/api/admin/createMember', { // adds new member to the database
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': context.getters.token
+                            },
+                            body: JSON.stringify({
+                              name: name,
+                              email: payload.email
+                            })
+                        })
+                        .then(res => {
+                          return res.json();
+                        })
+                        .then(data => {
+                            if(data.status === 'success') {
+                                context.dispatch("validateMember", payload.email); //validates the member
+                                resolve();
+                            }
+                            if (data.status === 'bad'){
+                                reject(data);
+                            }
+                        })
+                        .catch(error => {
+                            reject(error);
+                        })
+                    })
+                }
+            })
+        })
     },
     checkTime(context) {
       return new Promise((resolve,reject) => {

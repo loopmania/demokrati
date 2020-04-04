@@ -1,16 +1,20 @@
 <template>
     <div>
-        <v-card max-width="80%" class="ma-auto" >
+        <v-card max-width="80%" class="mx-auto my-4" >
             <v-card-title class="font-weight-light">
-                Lägg till ny medlem
+                Lägg till ny medlem som närvarande
                 <v-spacer></v-spacer>
             </v-card-title>
+            <p class="text-left pl-md-4">
+                Sök på personens namn eller email. <br/>
+                Finns den inte i listan måste kårmedlemsskap kontrolleras manuellt, lägg sedan till personen manuellt.
+            </p>
             <v-autocomplete
                 v-model="newMember"
                 class="d-inline-flex mx-auto pa-md-4"
                 width="400px"
                 :items="ths_members"
-                item-text="email"
+                item-text="searchname"
                 dense
                 label="Namn"
             ></v-autocomplete>
@@ -20,10 +24,14 @@
                 @click="validateMember()">
                 <span>Lägg till</span>
             </v-btn>
+            <MemberCreator
+            :activator="memberDialog"
+            :memberdata="NewMemberManual"
+            @close="resetDialog"/>
         </v-card>
         <v-card max-width="80%" class="mx-auto">
             <v-card-title class="font-weight-light">
-                Validerade Medlemmar
+                Närvarande medlemmar
                 <v-spacer></v-spacer>
                 <v-text-field
                     v-model="search"
@@ -40,7 +48,7 @@
             >
             <template v-slot:item="row">
                 <tr :class="getColor(row.item.signedIn)">
-                  <td>{{/*row.item.name*/ "namn"}}</td>
+                  <td>{{row.item.name}}</td>
                   <td>{{row.item.email}}</td>
                   <td>
                       <v-btn @click="invalidateMember(row.item)">
@@ -54,15 +62,16 @@
             </v-data-table>
 
         </v-card>
+        <br/>
     </div>
 </template>
 <script>
-//import NewMemberManual from './NewMemberManual';
+import MemberCreator from './MemberCreator';
 export default {
     name: 'MemberManager',
-    /*components: {
-        NewMemberManual
-    },*/
+    components: {
+        MemberCreator
+    },
     created() {
         this.$root.$data.socket.on('refreshMembers', this.refreshData);
         this.refreshData();
@@ -81,15 +90,22 @@ export default {
             valid_members: [],
             ths_members: [],
             newMember: null,
-            rowClass: ({ item }) => this.getColor(item.signedIn)
+            NewMemberManual: {
+                name: '',
+            },
+            memberDialog: false,
 
         };
     },
     methods: {
         getColor(signedIn){
-                if (signedIn === true) return "green lighten-5";
-                else return "white";
-            },
+            if (signedIn === true) return "green lighten-5";
+            else return "white";
+        },
+        resetDialog() {
+            this.memberDialog = false;
+            console.log(this.NewMemberManual);
+        },
         invalidateMember(member){
             console.log("invalidate")
             console.log(member)
@@ -103,9 +119,10 @@ export default {
         },
         validateMember(){
             console.log("validate")
-            // Currently this.newMember will only be the email.
-            // Necessary changes will have to be in place here
-            this.$store.dispatch('validateMember', this.newMember)
+            var email = this.newMember.split('(')[1]; // extract email from format "Name (email)"
+            email = email.replace(")", "");
+            console.log(email);
+            this.$store.dispatch('validateMember', email)
                 .then(() => {
                     this.newMember = '';
                 })
@@ -121,6 +138,7 @@ export default {
                 .then(result => {
                     if(result.status === 'success') {
                         this.ths_members = result.members;
+                        console.log("invalid members:")
                         console.log(this.ths_members);
                     }
                 })
@@ -131,6 +149,7 @@ export default {
                     .then(result => {
                         if(result.status === 'success') {
                             this.valid_members = result.members;
+                            console.log("valid members:")
                             console.log(this.valid_members);
                         }
                     })

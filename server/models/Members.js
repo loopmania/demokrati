@@ -12,6 +12,12 @@ const Members = db.define('members', {
     email: {
         type: Sequelize.STRING
     },
+    name: {
+        type: Sequelize.STRING
+    },
+    searchname:{
+        type: Sequelize.STRING
+    },
     temp_pass: {
         type: Sequelize.STRING
     },

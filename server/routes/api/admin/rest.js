@@ -77,7 +77,7 @@ router.patch('/validateMember', (req, res) => {
 
 router.get('/validMembers', (req, res) => {
     Members.findAll({
-        attributes: ['id','email','present','signed_in'],
+        attributes: ['id','email','present','signed_in', 'name'],
         where: {
             present: true
         },
@@ -93,7 +93,7 @@ router.get('/validMembers', (req, res) => {
 
 router.get('/invalidMembers', (req, res) => {
     Members.findAll({
-        attributes: ['id','email','present','signed_in'],
+        attributes: ['id','email','present','signed_in', 'name', 'searchname'],
         where: {
             present: false
         },
@@ -104,6 +104,21 @@ router.get('/invalidMembers', (req, res) => {
         })
         .catch((error) => {
             return MsgHandler(res, 41);
+        })
+});
+
+router.post('/createMember', (req, res) => {
+    const searchname = req.body.name + ' (' + req.body.email + ')';
+    Members.create({
+        email: req.body.email,
+        name: req.body.name,
+        searchname: searchname
+    })
+        .then(() => {
+            return MsgHandler(res, 44);
+        })
+        .catch(() => {
+            return MsgHandler(res, 45);
         })
 });
 
@@ -152,7 +167,7 @@ router.delete('/removePoll', (req,res) => {
     })
         .then(() => {
             exports.io.to('admin').emit('refreshPolls');
-            return MsgHandler(res, 44, {id: pollID});
+            return MsgHandler(res, 47, {id: pollID});
         })
         .catch(() => {
             return MsgHandler(res, 43);

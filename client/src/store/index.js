@@ -59,9 +59,16 @@ export default new Vuex.Store({
     },
     newPoll(state) {
       return state.newPoll;
+    },
+    currentTab() {
+      return localStorage.getItem('currentTab');
     }
   },
   mutations: {
+    setTab(state, payload) {
+      localStorage.setItem('currentTab', payload);
+      state.currentTab = payload;
+    },
     actions(state, payload) {
       state.actions = payload;
     },
@@ -143,16 +150,16 @@ export default new Vuex.Store({
           fetch('/api/logout', {
             method: 'GET',
             headers: {
-              'Authorization': context.state.token, // should add token to auth a logout?
+              'Authorization': context.state.token,
             }
           })
-          .then(resp => {
+          .then(() => {
             context.commit('invalidateEverything');
-            resolve(resp);
+            resolve();
           })
-          .catch(error => {
+          .catch(() => {
             context.commit('invalidateEverything');
-            reject(error);
+            reject();
           });
         });
       }

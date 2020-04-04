@@ -13,6 +13,7 @@ const Handler = (res, id, args) => {
         title: null,
         polls: null,
         members: null,
+        reason: null,
     };
     const handles = [
         {
@@ -321,6 +322,28 @@ const Handler = (res, id, args) => {
             statusCode: 200,
             code: 47,
             msg: `Successfully removed poll with id ${args.id}`
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 48,
+            msg: 'Successfully inactivated user'
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 49,
+            msg: 'Could not find user with right criteria'
+        },
+        {
+            // code 50
+        },
+        {
+            status: 'bad',
+            statusCode: 401,
+            code: 51,
+            msg: `Please contact valberedningen or IT-Ansvarig. \
+            ${args.reason}`
         }
 
     ];

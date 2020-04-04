@@ -1,35 +1,38 @@
 <template>
     <div>
-        Admin
-        <v-card>
-            <v-tabs
-            grow>
-                <v-tab>Dashboard</v-tab>
-                <v-tab>Omröstningar</v-tab>
-                <v-tab>Medlemmar</v-tab>
-                <v-tab-item>
-                    <Dashboard/>
-                </v-tab-item>
-                <v-tab-item>
-                    <PollManager/>
-                </v-tab-item>
-                <v-tab-item>
-                    <MemberManager/>
-                </v-tab-item>
-            </v-tabs>
-        </v-card>
+        <v-tabs
+        fill-height
+        centered
+        >
+            <v-tab
+            :to="{ path: '/dashboard'}">
+            Dashboard
+            </v-tab>
+            <v-tab
+            :to="{ path: '/polls'}"
+            >
+            Omröstningar
+            </v-tab>
+            <v-tab
+            :to="{ path: '/members'}"
+            >
+            Medlemmar
+            </v-tab>
+            
+        </v-tabs>
+        <router-view></router-view>
     </div>
 </template>
 <script>
-import Dashboard from '../components/Dashboard';
-import PollManager from '../components/PollManager';
-import MemberManager from '../components/MemberManager';
+//import Dashboard from '../components/Dashboard';
+//import PollManager from '../components/PollManager';
+//import MemberManager from '../components/MemberManager';
 
 export default {
-    components: {
+    /*components: {
         Dashboard,
         PollManager,
         MemberManager
-    },
+    },*/
 };
 </script>

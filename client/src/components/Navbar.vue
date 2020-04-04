@@ -54,6 +54,37 @@
                         </v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-group
+                color="white"
+                group>
+                    <template
+                    v-slot:activator>
+                    <v-list-item-icon
+                    class="white--text">
+                         <v-icon>
+                            lock
+                         </v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                        
+                        <v-list-item-title
+                        class="white--text">
+                            Admin
+                        </v-list-item-title>
+                    </v-list-item-content>
+                    </template>
+
+                    <v-list-item
+                    v-for="item in adminItems"
+                    :key="item.title"
+                    link
+                    router :to="item.route">
+                        <v-list-item-title
+                        class="white--text text-center">
+                            {{item.title}}
+                        </v-list-item-title>
+                    </v-list-item>
+                </v-list-group>
             </v-list>
             <template
             v-slot:append>
@@ -99,12 +130,24 @@ export default {
                     icon: 'schedule',
                     route: '/'
                 },
-                {
-                    title: 'Admin',
-                    icon: 'lock',
-                    route: '/admin',
-                }
             ],
+            adminItems: [
+                {
+                    title: 'Dashboard',
+                    icon: '',
+                    route: '/dashboard'
+                },
+                {
+                    title: 'Omröstningar',
+                    icon: '',
+                    route: '/polls'
+                },
+                {
+                    title: 'Medlemmar',
+                    icon: '',
+                    route: '/members'
+                }
+            ]
         }
     }
 };

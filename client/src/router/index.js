@@ -6,6 +6,9 @@ import Logout from '../components/Logout.vue'
 import Actions from '../views/Actions.vue'
 import Admin from '../views/Admin.vue'
 import store from '../store'
+import Dashboard from '../components/Dashboard';
+import PollManager from '../components/PollManager';
+import MemberManager from '../components/MemberManager';
 Vue.use(VueRouter)
 
 const routes = [
@@ -72,6 +75,20 @@ const routes = [
     path: '/Admin',
     name: 'Admin',
     component: Admin,
+    children: [
+      {
+        path: '/dashboard',
+        component: Dashboard
+      },
+      {
+        path: '/polls',
+        component: PollManager
+      },
+      {
+        path: '/members',
+        component: MemberManager
+      }
+    ],
     beforeEnter: (to, from, next) => {
       store.dispatch('isAuthenticated', {needAdmin: true})
         .then(result => {

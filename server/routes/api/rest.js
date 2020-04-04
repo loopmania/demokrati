@@ -36,7 +36,7 @@ router.get('/me', auth, isMember, (req, res) => {
     return MsgHandler(res, 12, {user: user});
 });
 
-router.post('/activate', async (req, res) => {
+router.post('/activate', (req, res) => {
     const {Error} = validEmail(req.body);
     if(Error) {
         return MsgHandler(res, 3);
@@ -48,54 +48,64 @@ router.post('/activate', async (req, res) => {
     * apart of database of valid 
     * THS members-register
     */
-    const member = await Members.findOne({
-        where: {
-            email: maybeEmail,
-            present: false
-        }
-    });
-    if (!member) {
-        return MsgHandler(res, 2);
-    };
-    /*
-    * Start a validation process
-    * to allow the user to
-    * sign in via validating their email
-    */
-    await member.activate();
-    // check whether member is admin or regular
-    const message = {
-        from: 'noreply@iare.se',
-        to: `${maybeEmail}`,
-        subject: `Your Temporary Demokrati \
-        Login Code`,
-        html: `<b>${member.getCode()}</b>`
-        // To-do: style email html
-    };
-    /*Mailer.sendMail(message, (err, info) => {
-        if(err) {
-            console.log(err);
-        } else {
-            console.info(info);
-        }
-    });
-    */
-   let payload = {
-    email: maybeEmail,
-    ip: req.header('x-forwarded-for') || req.connection.remoteAddress
-   };
-    if(member.isAdmin()) {
-        payload.admin = {
-            foo: 'bar'
-        }
-    };
-    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
-        return MsgHandler(res, 1, {
-            token: token,
-            email: maybeEmail, // to be removed
-            code: member.getCode() // to be removed
-        });
-    });
+    Members.findByEmail(maybeEmail)
+        .then(member => {
+            /*
+            * Start a validation process
+            * to allow the user to
+            * sign in via validating their email
+            */
+            member.activate()
+                .then(activatedMember => {
+                    const code = activatedMember.getCode()
+                    const message = {
+                        from: 'noreply@iare.se',
+                        to: `${maybeEmail}`,
+                        subject: `Your Temporary Demokrati \
+                        Login Code`,
+                        html: `<b>${code}</b>`
+                        // To-do: style email html
+                    };
+                    /*Mailer.sendMail(message, (err, info) => {
+                        if(err) {
+                            console.log(err);
+                        } else {
+                            console.info(info);
+                        }
+                    });
+                    */
+                    let payload = {
+                        email: maybeEmail,
+                        ip: req.header('x-forwarded-for') || req.connection.remoteAddress
+                    };
+                    if(activatedMember.isAdmin()) {
+                        payload.admin = {
+                            foo: 'bar'
+                        }
+                    };
+                    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
+                        return MsgHandler(res, 1, {
+                            token: token,
+                            email: maybeEmail, // to be removed
+                            code: code // to be removed
+                        });
+                    });
+                })
+                .catch(error => {
+                    let reason;
+                    if(error.signed_in === true) {
+                        reason = 'You are already logged in';
+                    }
+                    if(error.present === false && !error.admin) {
+                        reason = 'You need to be present at the SM to login.';
+                    }
+                    return MsgHandler(res, 51, {reason: reason})
+                })
+            
+        })
+        .catch(() => {
+            return MsgHandler(res, 2);
+        })
 });
 
 router.post('/verify', auth, (req, res) => {
@@ -108,12 +118,13 @@ router.post('/verify', auth, (req, res) => {
     Members.findOne({
         where: {
             email: email,
-            present: false,
+            present: req.user.admin !== undefined ? false : true,
             temp_pass: tempCode
         }
     })
         .then(member => {
             member.signIn();
+            member.setAttendance();
             const user = req.user;
             delete user.exp;
             let localUser = {
@@ -124,15 +135,24 @@ router.post('/verify', auth, (req, res) => {
             if(member.isAdmin()) {
                 localUser.admin = true;
             }
-            
-            jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, async (err, token) => {
-                await member.setRefreshToken(token);
+            jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, (err, token) => {
+                member.setRefreshToken(token);
                 return MsgHandler(res, 6, {token: token, user: localUser});
             })
         })
         .catch(() => {
-            
             return MsgHandler(res, 7);
+        })
+});
+
+router.get('/logout', auth, isMember, (req, res) => {
+    const member = req.member;
+    member.inactivate()
+        .then(() => {
+            return MsgHandler(res, 48)
+        })
+        .catch(() => {
+            return MsgHandler(res, 49)
         })
 });
 
@@ -226,6 +246,10 @@ router.put('/vote', auth, isMember, (req, res) => {
 });
 
 router.get('/timeleft', auth, isMember, (req, res) => {
+    refresher(req, res);
+
+})
+const refresher = (req, res) => {
     const user = req.user;
     const currentTime = Math.floor(Date.now() / 1000);
     const expireTime = user.exp;
@@ -234,6 +258,6 @@ router.get('/timeleft', auth, isMember, (req, res) => {
     } else {
         return MsgHandler(res, 26);
     }
+}
 
-})
 module.exports = router;

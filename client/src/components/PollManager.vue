@@ -1,79 +1,99 @@
 <template>
     <div>
-        PollManager
         <PollCreator
         @close="resetDialog"/>
         <Results
         :visible="resultDialog"
         :result="result"
         @close="resultDialog = false"/>
-        <v-btn
-        text
-        class="success"
-        @click="create()">
-            <span>Ny omröstning</span>
-         </v-btn>
-        <v-expansion-panels
-        class="py-8"
-        accordion
-        v-model="openPanel">
-            <v-expansion-panel
-            v-for="poll in polls"
-            :key="poll.id">
-                <v-expansion-panel-header
-                expand-icon="expand_more">
-                    <strong
-                    v-if="poll.active">
-                        {{poll.title}}
-                    </strong>
-                    <span
-                    v-else>
-                        {{poll.title}}
+        <v-card max-width="80%" class="mx-auto my-4 py-2" >
+            <v-card-title class="font-weight-light">
+                Skapa ny omröstning
+            </v-card-title>
+            <v-card-text>
+                <p>
+                    Här går det att skapa, redigera och ta bort omröstningar. <br>
+                    Det går även att avsluta en aktiverad omröstning och på så vis få
+                    fram resultatet för omröstningen.
+                </p>
+            </v-card-text>
+            <v-card-actions>
+                <v-btn
+                text
+                class="success"
+                @click="create()">
+                    <span>
+                    Ny omröstning
                     </span>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <v-row no-gutters>
-                        <v-btn
-                        depressed
-                        class="mx-2"
-                        color="primary"
-                        v-if="!poll.active"
-                        @click="activate(poll.id)">
-                            <v-icon left>launch</v-icon>
-                            <span>Aktivera</span>
-                        </v-btn>
-                        <v-btn
-                        depressed
-                        class="mx-2"
-                        color="secondary"
-                        v-else
-                        @click="showResult(poll.id)">
-                            <v-icon left>launch</v-icon>
-                            <span>Avsluta</span>
-                            
-                        </v-btn>
-                        <v-btn
-                        depressed
-                        class="mx-2"
-                        :disabled="poll.active"
-                        @click="change(poll.id)">
-                            <v-icon left>create</v-icon>
-                            <span>Ändra</span>
-                        </v-btn>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                        depressed
-                        color="error"
-                        :disabled="poll.active"
-                        @click="remove(poll.id)">
-                            <v-icon left>delete</v-icon>
-                            <span>Radera</span>
-                        </v-btn>
-                    </v-row>
-                    
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-        </v-expansion-panels>
+                </v-btn>
+            </v-card-actions>
+            
+        </v-card>
+        <v-card max-width="80%" class="mx-auto my-4" >
+            <v-card-title class="font-weight-light">
+                Hantera omröstningar
+            </v-card-title>
+            <v-expansion-panels
+            flat
+            v-model="openPanel">
+                <v-expansion-panel
+                v-for="poll in polls"
+                :key="poll.id">
+                    <v-expansion-panel-header
+                    expand-icon="expand_more">
+                        <strong
+                        v-if="poll.active">
+                            {{poll.title}}
+                        </strong>
+                        <span
+                        v-else>
+                            {{poll.title}}
+                        </span>
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <v-row no-gutters>
+                            <v-btn
+                            depressed
+                            class="mx-2"
+                            color="primary"
+                            v-if="!poll.active"
+                            @click="activate(poll.id)">
+                                <v-icon left>launch</v-icon>
+                                <span>Aktivera</span>
+                            </v-btn>
+                            <v-btn
+                            depressed
+                            class="mx-2"
+                            color="secondary"
+                            v-else
+                            @click="showResult(poll.id)">
+                                <v-icon left>launch</v-icon>
+                                <span>Avsluta</span>
+                                
+                            </v-btn>
+                            <v-btn
+                            depressed
+                            class="mx-2"
+                            :disabled="poll.active"
+                            @click="change(poll.id)">
+                                <v-icon left>create</v-icon>
+                                <span>Ändra</span>
+                            </v-btn>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                            depressed
+                            color="error"
+                            :disabled="poll.active"
+                            @click="remove(poll.id)">
+                                <v-icon left>delete</v-icon>
+                                <span>Radera</span>
+                            </v-btn>
+                        </v-row>
+                        
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+            </v-expansion-panels>
+        </v-card>
     </div>
 </template>
 <script>

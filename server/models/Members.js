@@ -38,6 +38,9 @@ const Members = db.define('members', {
     },
     has_voted: {
         type: Sequelize.BOOLEAN
+    },
+    attendance: {
+        type: Sequelize.ARRAY(Sequelize.STRING)
     }
 });
 
@@ -45,7 +48,7 @@ Members.findByEmail = function(email) {
     return Members.findOne({
         where: {
             email: email
-        }
+        },
     });
 };
 Members.resetVote = function() {
@@ -59,45 +62,129 @@ Members.resetVote = function() {
     })
 }
 
+Members.reset = function() {
+    Members.update({
+        signed_in: false
+    },
+    {
+        where: {
+            signed_in: true
+        }
+    })
+}
 
-Members.prototype.activate = async function() {
+
+Members.prototype.activate = function() {
     /*
     * Generates a randomized code,
     * then stores it to the instance,
     * for later validation.
     */
-    const code = await Words.generateCode();
-    this.present = false; // change later to true
-    this.temp_pass = code;
-    this.save();
+   return new Promise((resolve,reject) => {
+        Words.generateCode()
+            .then(code => {
+                Members.update({
+                        temp_pass: code
+                    }, {
+                        where: {
+                            email: this.email,
+                            present: !this.admin,
+                            signed_in: false
+                        },
+                        returning: true
+                    })
+                        .then(result => {
+                            if(result[0] === 1) {
+                                resolve(result[1][0]);
+                            } else {
+                                reject(this);
+                            }
+                        });
+            });
+   })
+    
+};
+Members.prototype.inactivate = function() {
+    return Members.update({
+        present: false,
+        signed_in: false,
+        temp_pass: null,
+    }, {
+        where: {
+            id: this.id,
+            present: !this.admin,
+            signed_in: true,
+            email: this.email,
+        }
+    })
 };
 Members.prototype.getCode = function() {
     return this.temp_pass;
 };
-Members.prototype.signIn = async function() {
-    this.signed_in = false; // change later to true
+Members.prototype.signIn = function() {
+    this.signed_in = true;
+    this.temp_pass = null;
     this.save();
 };
+
+Members.prototype.setAttendance = function() {
+    const date = new Date();
+    const month = Number(date.getMonth() + 1);
+    let data = [];
+    if(this.attendance !== null) {
+        this.attendance.forEach(att => data.push(att))
+    }
+    if(month === 8 || month === 9) {
+        data.push('SM1');
+    }
+    if(month === 10 || month === 11) {
+        data.push('SM2');
+    }
+    if(month === 1 || month === 2) {
+        data.push('SM3');
+    }
+    if(month === 3 || month === 4) {
+        data.push('SM4');
+    }
+    if(month >= 5 && month <= 7) {
+        data.push('SMX');
+    }
+    this.attendance = data;
+    this.save();
+    
+    
+}
 Members.prototype.isAdmin = function() {
     return this.admin;
 };
 Members.prototype.setRefreshToken = function(token) {
-    this.refresh_token = token;
-    this.save();
+    Members.update({
+        refresh_token: token
+    }, {
+        where: {
+            id: this.id,
+            signed_in: true,
+            present: !this.admin
+        }
+    })
 };
 Members.prototype.hasVoted = function() {
     return this.has_voted;
 };
 Members.prototype.vote = function() {
     return new Promise((resolve, reject) => {
-        if(!this.hasVoted()) {
-            this.has_voted = true;
-            this.save();
-            resolve();
-        }
-        else {
-            reject();
-        }
+        Members.update({
+            has_voted: true
+        }, {
+            where: {
+                has_voted: false,
+                id: this.id,
+                present : !this.admin,
+                signed_in: true,
+            }
+        })
+            .then(resolve())
+            .catch(reject())
     });
 };
 

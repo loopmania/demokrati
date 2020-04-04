@@ -7,7 +7,7 @@ const Joi = require('joi');
  */
 const validEmail = (data) => {
     const schema = {
-        email: Joi.string().email().regex(/@kth.se$/).required()
+        email: Joi.string().email().regex(/@kth\.se$/).required()
     };
     return Joi.validate(data, schema);
 }

@@ -7,7 +7,7 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const dotenv = require('dotenv');
-
+const Members = require('./models/Members');
 // config
 dotenv.config();
 
@@ -23,7 +23,10 @@ const db = require('./database/db');
 const publicPath = path.join(__dirname, '..', 'client', 'dist');
 
 db.authenticate()
-    .then(() => console.log('Database connected..'))
+    .then(() => {
+        console.log('Database connected..')
+        Members.reset();
+    })
     .catch(err => console.log(`Error: ${err}`));
 
 const httpApp = express();

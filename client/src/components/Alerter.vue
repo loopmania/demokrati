@@ -20,12 +20,12 @@ export default {
         alertError() {
             const instructions = this.$store.getters.alertError;
             return instructions;
-        }
+        },
     },
     data() {
         return {
             snackbar: false,
-            timer: null
+            
         }
     },
     methods: {
@@ -35,8 +35,9 @@ export default {
                 //
             }
             if(method === 'update') {
-                clearTimeout(this.timer);
-                this.$store.dispatch('refresh');
+                const timer = this.alertError.action.timer;
+                clearTimeout(timer);
+                this.$store.dispatch('findMe');
             }
             this.alertError.snackbar = false;
         }

@@ -17,27 +17,18 @@ const Words = db.define('words_dataset', {
 * login code from a wordset
 * @return {login code} from words 
 */
-Words.generateCode = async function() {
-    const words = await Words.findAll({
-        order: Sequelize.fn('RANDOM'),
-        limit: 4,
-        raw: true
-    });
-    const tempCode = words.map(word => word.name).join('-');
-    return tempCode;
-    /*
+Words.generateCode = function() {
     return new Promise(resolve => {
         Words.findAll({
             order: Sequelize.fn('RANDOM'),
             limit: 4,
             raw: true
         })
-            .then((words) => {
-                const tempCode = words.map(word => word.name).join('-');
-                resolve(tempCode);
-            });
+            .then(words => {
+                resolve(words.map(word => word.name).join('-'));
+            })
     })
-    */
+    
 };
 
 module.exports = Words;

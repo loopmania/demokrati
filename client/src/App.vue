@@ -50,6 +50,9 @@ export default {
         })
     },
     refresh() {
+      const timer = setTimeout(() => {
+        this.$store.dispatch('destroyToken');
+      }, 2 * 60 * 1000);
       this.$store.dispatch('checkTime')
         .then(result => {
           if(result.status === 'bad') {
@@ -60,7 +63,8 @@ export default {
               snackbar: true,
               action: {
                 method: 'update',
-                text: 'Ja'
+                text: 'Ja',
+                timer: timer
               }
             })
           } else {

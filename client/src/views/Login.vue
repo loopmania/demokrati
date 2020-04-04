@@ -158,7 +158,7 @@ export default {
                 return errors;
             }
             !this.$v.formStepper.email.email && errors.push('Måste vara en riktig KTH-email');
-            !this.$v.formStepper.email.required && errors.push('en KTH-email krävs');
+            !this.$v.formStepper.email.required && errors.push('En KTH-email krävs');
             return errors;
         },
         codeErrors() {

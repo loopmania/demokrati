@@ -7,7 +7,7 @@
             </v-card-title>
             <p class="text-left pl-md-4">
                 Sök på personens namn eller email. <br/>
-                Finns den inte i listan måste kårmedlemsskap kontrolleras manuellt, lägg sedan till personen manuellt.
+                Finns den inte i listan måste kårmedlemskap kontrolleras manuellt, lägg sedan till personen manuellt.
             </p>
             <v-autocomplete
                 v-model="newMember"
@@ -36,7 +36,7 @@
                 <v-text-field
                     v-model="search"
                     append-icon="mdi-magnify"
-                    label="Search"
+                    label="Sök (namn eller mail)"
                     single-line
                     hide-details
                 ></v-text-field>
@@ -118,10 +118,32 @@ export default {
                 })
         },
         validateMember(){
-            console.log("validate")
-            var email = this.newMember.split('(')[1]; // extract email from format "Name (email)"
-            email = email.replace(")", "");
-            console.log(email);
+            console.log(this.newMember)
+            console.log(this.newMember)
+            var email;
+            if (this.newMember === ''){
+                email = '';
+            }
+            else {
+                email = this.newMember.split('(')[1]; // extract email from format "Name (email)"
+                email = email.replace(")", "");
+            }
+
+            let ths_emails = this.ths_members.map(({ email }) => email);
+            if (!ths_emails.includes(email)){
+                this.$store.commit('alertClient', {
+                    color: 'error',
+                    text: 'Personen du försöker lägga till inte i listan av THS-medlemmar. Kontrollera kårmedlemskap och lägg till manuellt.',
+                    timeout: 6000,
+                    snackbar: true,
+                    action: {
+                        method: 'exit',
+                        text: 'Stäng'
+                    }
+                });
+                return
+            }
+
             this.$store.dispatch('validateMember', email)
                 .then(() => {
                     this.newMember = '';
@@ -138,8 +160,6 @@ export default {
                 .then(result => {
                     if(result.status === 'success') {
                         this.ths_members = result.members;
-                        console.log("invalid members:")
-                        console.log(this.ths_members);
                     }
                 })
                 .catch(() => {
@@ -149,8 +169,7 @@ export default {
                     .then(result => {
                         if(result.status === 'success') {
                             this.valid_members = result.members;
-                            console.log("valid members:")
-                            console.log(this.valid_members);
+                            this.$store.commit('populateMemberList', this.valid_members);
                         }
                     })
                     .catch(() => {

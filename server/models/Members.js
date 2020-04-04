@@ -56,7 +56,7 @@ Members.prototype.activate = async function() {
     * for later validation.
     */
     const code = await Words.generateCode();
-    this.present = false; // change later to true
+    //this.present = false; // change later to true eller inte
     this.temp_pass = code;
     this.save();
 };
@@ -64,7 +64,7 @@ Members.prototype.getCode = function() {
     return this.temp_pass;
 };
 Members.prototype.signIn = async function() {
-    this.signed_in = false; // change later to true
+    this.signed_in = true; // change later to true
     this.save();
 };
 Members.prototype.isAdmin = function() {

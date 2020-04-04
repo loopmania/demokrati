@@ -6,5 +6,8 @@
 <script>
 export default {
     name: 'Dashboard'
+
+    // kicka alla!
+    // statistik :)
 }
 </script>

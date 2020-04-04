@@ -68,6 +68,14 @@ export default {
             !this.$v.formStepper.email.email && errors.push('Måste vara en riktig KTH-email');
             !this.$v.formStepper.email.required && errors.push('en KTH-email krävs');
             return errors;
+        },
+        members: {
+            get(){
+                return this.$store.getters.members;
+            }
+            /*set(value){
+
+            }*/
         }
     },
     data: () => ({
@@ -78,6 +86,20 @@ export default {
     }),
     methods: {
         submit() {
+            let ths_emails = this.members.map(({ email }) => email);
+            if (ths_emails.includes(this.member.email)){
+                this.$store.commit('alertClient', {
+                    color: 'error',
+                    text: 'Personen du försöker lägga till finns redan i listan av THS-medlemmar.',
+                    timeout: 6000,
+                    snackbar: true,
+                    action: {
+                        method: 'exit',
+                        text: 'Stäng'
+                    }
+                });
+                return
+            }
             this.$store.dispatch('addNewMember', this.member)
                 .then(() => {
                     this.member.email = '';

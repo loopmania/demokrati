@@ -149,7 +149,7 @@ const Handler = (res, id, args) => {
             status: 'success',
             statusCode: 200,
             code: 19,
-            msg: `Member with id ${args.id} session has been invalidated`
+            msg: `Member with email ${args.email} session has been invalidated`
         },
         {
             status: 'bad',
@@ -253,7 +253,7 @@ const Handler = (res, id, args) => {
             status: 'success',
             statusCode: 200,
             code: 36,
-            msg: `Member with id ${args.id} session has been validated`
+            msg: `Member with email ${args.email} session has been validated`
         },
         {
             status: 'bad',
@@ -272,7 +272,7 @@ const Handler = (res, id, args) => {
             status: 'bad',
             statusCode: 400,
             code: 39,
-            msg: `Something happen with the Members within the database`
+            msg: `Something happened with the Members within the database`
         },
         {
             status: 'success',
@@ -285,7 +285,7 @@ const Handler = (res, id, args) => {
             status: 'bad',
             statusCode: 400,
             code: 41,
-            msg: `Something happen with the Members within the database`
+            msg: `Something happened with the Members within the database`
         },
         {
             status: 'success',
@@ -310,6 +310,18 @@ const Handler = (res, id, args) => {
             statusCode: 400,
             code: 45,
             msg: 'A member could not be created'
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 46,
+            msg: `Member already in database`
+        },
+        {
+            status: 'bad',
+            statusCode: 400,
+            code: 50,
+            msg: `Something happened with the Members within the database`
         },
 
     ];

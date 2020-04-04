@@ -34,13 +34,14 @@ router.post('/activate', async (req, res) => {
     const maybeEmail = req.body.email;
     /*
     * Checks if email of member is
-    * apart of database of valid 
+    * apart of database of valid
     * THS members-register
     */
     const member = await Members.findOne({
         where: {
             email: maybeEmail,
-            present: false
+            present: true, // change to true
+            signed_in: false
         }
     });
     if (!member) {
@@ -97,7 +98,7 @@ router.post('/verify', auth, async (req, res) => {
     const member = await Members.findOne({
         where: {
             email: email,
-            present: false,
+            present: true,
             temp_pass: tempCode
         }
     });

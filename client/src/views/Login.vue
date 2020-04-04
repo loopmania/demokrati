@@ -23,9 +23,9 @@
                             required
                             @input="$v.formStepper.email.$touch()"
                             @blur="$v.formStepper.email.$touch()">
-                            
+
                         </v-text-field>
-                        
+
                         <v-btn color="primary" @click="activateMail()">Fortsätt</v-btn>
                         <v-btn text @click="abort()">Avbryt</v-btn>
                     </v-stepper-content>
@@ -37,7 +37,7 @@
                     <v-stepper-content step="2">
                         <p>
                             Vi har skickat en temporär inloggningskod
-                            till din email. 
+                            till din email.
                         </p>
                         <v-text-field
                             label="Inloggningskod"
@@ -66,7 +66,7 @@ export default {
 
     validations: {
         formStepper: {
-            email: { 
+            email: {
                 required,
                 email,
             },
@@ -77,7 +77,7 @@ export default {
                 }
             }
         }
-      
+
     },
     data() {
         return {
@@ -99,7 +99,7 @@ export default {
             if(!this.$v.formStepper.$anyError && this.formStepper.email !== null) {
                 this.$store.dispatch('activate', this.formStepper)
                     .then(status => {
-                        
+
                         if(status === 'success') {
                             this.formStepper.step = 2;
                         }
@@ -115,7 +115,7 @@ export default {
                                 text: 'Stäng'
                             }
                         });
-                        
+
                     });
             } else {
                 this.$v.formStepper.email.$touch();
@@ -167,7 +167,7 @@ export default {
             !this.$v.formStepper.code.required && errors.push('Du behöver en kod från din KTH-email');
             return errors;
         }
-        
+
     },
 }
 </script>

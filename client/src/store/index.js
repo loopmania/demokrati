@@ -18,7 +18,8 @@ export default new Vuex.Store({
         method: null,
         text: null
       },
-    }
+    },
+    validMemberList: []
   },
   getters: {
     loggedIn(state) {
@@ -35,6 +36,9 @@ export default new Vuex.Store({
     },
     refreshToken(state) {
       return state.refreshToken;
+    },
+    members(state){
+        return state.validMemberList;
     }
   },
   mutations: {
@@ -72,7 +76,11 @@ export default new Vuex.Store({
     },
     alertClient(state, payload) {
       state.error = payload;
+    },
+    populateMemberList(state, payload) {
+        state.validMemberList = payload;
     }
+
   },
   actions: {
     destroyToken(context) {

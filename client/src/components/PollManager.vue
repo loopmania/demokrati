@@ -2,8 +2,6 @@
     <div>
         PollManager
         <PollCreator
-        :activator="pollDialog"
-        :polldata="focusedPoll"
         @close="resetDialog"/>
         <Results
         :visible="resultDialog"
@@ -18,7 +16,7 @@
         <v-expansion-panels
         class="py-8"
         accordion
-        v-model="panel">
+        v-model="openPanel">
             <v-expansion-panel
             v-for="poll in polls"
             :key="poll.id">
@@ -95,13 +93,8 @@ export default {
     data() {
         return {
             polls: [],
-            focusedPoll: {
-                title: '',
-                candidates: {}
-            },
-            panel: null,
             resultDialog: false,
-            pollDialog: false,
+            openPanel: 0,
             result: {
                 title: null,
                 candidates: {}
@@ -127,7 +120,6 @@ export default {
                     })
                     .catch(error => {
                         if(error.status) {
-                            this.getActive();
                             this.$store.commit('alertClient', {
                                 color: 'error',
                                 text: error.msg,
@@ -143,8 +135,7 @@ export default {
             }
         },
         resetDialog() {
-            this.pollDialog = false;
-            console.log(this.focusedPoll);
+           this.$store.commit('newPoll', true);
         },
         showResult(id) {
             const poll = this.findByID(id);
@@ -153,7 +144,6 @@ export default {
                     .then((data) => {
                         if(data.status === 'success') {
                             this.result = data.votes;
-                            console.log(this.result);
                             this.resultDialog = true;
                         }
                     })
@@ -174,35 +164,59 @@ export default {
             }
         },
         create() {
-            this.focusedPoll = {
-                title: '',
-                candidates: {}
-            }
-            this.pollDialog = true;
+           this.$store.commit('newPoll', true);
+           this.$store.commit('showPollCreator', true);
         },
         change(id) {
-            this.pollDialog = false;
-            const poll = this.findByID(id);
-            this.focusedPoll = poll;
-            this.pollDialog = true;
+           const poll = this.findByID(id);
+           this.$store.commit('pollID', id);
+           this.$store.commit('newPoll', false);
+           this.$store.commit('actions', 'Redigera omröstning');
+           this.$store.commit('title', poll.title);
+           this.$store.commit('candidates', poll.candidates);
+           this.$store.commit('showPollCreator', true);
         },
         remove(id) {
-            console.log(id);
+            const poll = this.findByID(id);
+            if(!poll.active) {
+                this.$store.dispatch('removePoll', poll.id)
+                    .then(data => {
+                        this.$store.commit('alertClient', {
+                                color: 'success',
+                                text: data.msg,
+                                timeout: 6 * 1000,
+                                snackbar: true,
+                                action: {
+                                    method: 'exit',
+                                    text: 'Ok'
+                                }
+                            });
+                    })
+                    .catch(error => {
+                        if(error.status) {
+                            this.$store.commit('alertClient', {
+                                color: 'error',
+                                text: error.msg,
+                                timeout: 6 * 1000,
+                                snackbar: true,
+                                action: {
+                                    method: 'exit',
+                                    text: 'Ok'
+                                }
+                            });
+                        }
+                    })
+            }
         },
         findByID(id) {
             return this.polls.find(poll => poll.id === id);
-        },
-        getActive() {
-            const poll = this.polls.findIndex(poll => poll.active === true);
-            this.panel = poll;
-            return poll;
         },
         refreshData() {
             this.$store.dispatch('getPolls')
                 .then(result => {
                     if(result.status === 'success') {
+                        console.log('this actually happened..');
                         this.polls = result.polls;
-                        this.getActive();
                         
                     }
                 })

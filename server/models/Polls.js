@@ -2,7 +2,7 @@
 const Sequelize = require('sequelize');
 const db = require('../database/db');
 const Votes = require('./Votes');
-
+const Members = require('./Members');
 const Polls = db.define('polls', {
     id: {
         type: Sequelize.INTEGER,
@@ -41,37 +41,37 @@ Polls.findActive = function() {
 };
 Polls.activate = function(poll) {
     return new Promise((resolve, reject) => {
-        Polls.findByPk(poll)
+        Polls.update({
+            active: true
+        },
+        {
+            where: {
+                id: poll
+            }
+        })
             .then(record => {
-                record.active = true;
-                record.save();
                 resolve(record);
             })
             .catch(error => {
                 reject(error);
-            })
+            });
     })
 };
 Polls.inactivate = function(pollID) {
     return new Promise((resolve, reject) => {
-        Polls.findActive()
-            .then(result => {
-                if(result[0].active === true && result[0].id === pollID) {
-                    Polls.findByPk(pollID)
-                        .then(record => {
-                            record.active = false;
-                            record.save();
-                            resolve();
-                        })
-                        .catch(error => {
-                            reject(error);
-                        })
-                } else {
-                    reject();
-                }
+        Polls.update({
+            active: false
+        }, {
+            where: {
+                active: true,
+                id: pollID
+            }
+        })
+            .then(() => {
+                resolve();
             })
-            .catch((error) => {
-                reject(error);
+            .catch(() => {
+                reject();
             })
     })
 };
@@ -81,11 +81,9 @@ Polls.getResults = function(pollID) {
         Polls.findActive()
             .then(result => {
                 if(result[0].active === true && result[0].id === pollID) {
-                    Polls.findByPk(pollID)
-                        .then(record => {
-                            //record.active = false;
-                            //record.save();
-                            const candidates = record.candidates;
+                    Polls.inactivate(pollID)
+                        .then(() => {
+                            const candidates = result[0].candidates;
                             Votes.findAll({
                                 attributes: ['vote', [Sequelize.fn('COUNT', 'vote'), 'result']],
                                 where: {
@@ -95,23 +93,25 @@ Polls.getResults = function(pollID) {
                                 raw: true,
                             })
                                 .then(votes => {
-                                    console.log(votes);
                                     let data = {
-                                        title: record.title,
+                                        title: result[0].title,
                                         candidates: {}
                                     };
-                                    let i = 0;
                                     let totalVotes = 0;
                                     votes.forEach(vote => totalVotes += parseInt(vote.result));
-                                    data.title = record.title;
                                     candidates.forEach(candidate => {
-                                        let vote = votes[i] !== undefined ? parseInt(votes[i].result) : 0
                                         data['candidates'][candidate] = {
-                                            votes: vote,
-                                            percentage: totalVotes !== 0 ? +((vote / totalVotes * 100).toFixed(2)) : 0
+                                            votes: 0,
+                                            percentage: 0
                                         }
-                                        i++;
-                                    });
+                                    })
+                                    votes.forEach(({vote, result}) => {
+                                        data.candidates[candidates[vote]] = {
+                                            votes: parseInt(result),
+                                            percentage: +((parseInt(result) / totalVotes * 100).toFixed(2))
+                                        }
+                                    })
+                                    Members.resetVote();
                                     resolve(data);
                                 })
                                 .catch(error => {

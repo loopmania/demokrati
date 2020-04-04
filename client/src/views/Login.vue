@@ -125,9 +125,12 @@ export default {
             const activated = this.$store.getters.hasActivated;
             if(this.formStepper.step === 2 && activated && !this.$v.formStepper.$anyError && this.formStepper.code !== null) {
                 this.$store.dispatch('verify', this.formStepper)
-                    .then(status => {
-                        if(status === 'success') {
+                    .then(result => {
+                        if(result.status === 'success' && result.user !== undefined) {
                             this.$root.$data.socket.emit('join', 'sm');
+                            if(result.user.admin) {
+                                this.$root.$data.socket.emit('join', 'admin');
+                            }
                             this.$router.push({ name: 'Vote'});
                         }
                     })

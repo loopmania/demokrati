@@ -20,7 +20,6 @@ router.use((req, res, next) => {
     if(!req.user.admin) {
         return MsgHandler(res, 21);
     } else {
-        console.log('authenticated');
         next();
     }
 })
@@ -143,11 +142,30 @@ router.patch('/editPoll', (req,res) => {
             console.log(error);
             return MsgHandler(res, 43);
         })
+});
+router.delete('/removePoll', (req,res) => {
+    const pollID = req.body.id;
+    Polls.destroy({
+        where: {
+            id: pollID
+        }
+    })
+        .then(() => {
+            exports.io.to('admin').emit('refreshPolls');
+            return MsgHandler(res, 44, {id: pollID});
+        })
+        .catch(() => {
+            return MsgHandler(res, 43);
+        })
 })
 
 router.get('/polls', (req, res) => {
     Polls.findAll({
-        attributes: ['id','title', 'candidates','active']
+        attributes: ['id','title', 'candidates','active'],
+        order: [
+            ['active', 'DESC'],
+            ['id','ASC']
+          ]
     })
         .then((polls) => {
             return MsgHandler(res, 30, {polls: polls});
@@ -183,6 +201,8 @@ router.put('/results', (req, res) => {
         const poll = req.body.pollID;
         Polls.getResults(poll)
             .then(votes => {
+                exports.io.to('sm').emit('inactivate');
+                exports.io.to('admin').emit('refreshPolls');
                 return MsgHandler(res, 34, { votes: votes});
             })
             .catch(error => {

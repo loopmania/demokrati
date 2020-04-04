@@ -58,7 +58,7 @@ const Handler = (res, id, args) => {
             statusCode: 200,
             refreshToken: args.token,
             msg: 'Welcome',
-            payload: args.user
+            user: args.user
         },
         {
             status: 'bad',
@@ -90,12 +90,14 @@ const Handler = (res, id, args) => {
             statusCode: 200,
             code: 11,
             token: args.token,
+            user: args.user,
             msg: `Token extended with 25 minutes`
         },
         {
             status: 'success',
             statusCode: 200,
             code: 12,
+            user: args.user,
             msg: 'Client authenticated'
         },
         {
@@ -298,6 +300,12 @@ const Handler = (res, id, args) => {
             statusCode: 400,
             code: 43,
             msg: 'Could not find poll'
+        },
+        {
+            status: 'success',
+            statusCode: 200,
+            code: 44,
+            msg: `Successfully removed poll with id ${args.id}`
         },
 
     ];

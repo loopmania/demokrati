@@ -18,7 +18,13 @@ export default new Vuex.Store({
         method: null,
         text: null
       },
-    }
+    },
+    actions: 'Lägg till en ny omröstning',
+    pollID: null,
+    title: '',
+    candidates: [],
+    showPollCreator: false,
+    newPoll: true,
   },
   getters: {
     loggedIn(state) {
@@ -35,9 +41,66 @@ export default new Vuex.Store({
     },
     refreshToken(state) {
       return state.refreshToken;
+    },
+    actions(state) {
+      return state.actions;
+    },
+    title(state) {
+      return state.title;
+    },
+    pollid(state) {
+      return state.pollID;
+    },
+    candidates(state) {
+      return state.candidates;
+    },
+    showPollCreator(state) {
+      return state.showPollCreator;
+    },
+    newPoll(state) {
+      return state.newPoll;
     }
   },
   mutations: {
+    actions(state, payload) {
+      state.actions = payload;
+    },
+    title(state, payload) {
+      state.title = payload;
+    },
+    pollID(state, payload) {
+      state.pollID = payload;
+    },
+    candidates(state, payload) {
+      if(payload.length > 1) {
+        let data = []
+        payload.forEach(candidate => data.push({text: candidate}));
+        state.candidates = data;
+      } else {
+        state.candidates = payload;
+      }
+      
+    },
+    addCandidate(state, payload) {
+      state.candidates.push({text: payload});
+    },
+    showPollCreator(state, payload) {
+      state.showPollCreator = payload;
+    },
+    newPoll(state, payload) {
+      if(payload === true) {
+        state.actions = 'Lägg till en ny omröstning';
+        state.title = '';
+        state.candidates = [
+          {
+            text: 'Blankt'
+          }, 
+          {
+            text: 'Avslag'
+          }];
+      }
+      state.newPoll = payload;
+    },
     setToken(state, token) {
       localStorage.removeItem('access_token');
       localStorage.setItem('access_token', token);
@@ -52,7 +115,6 @@ export default new Vuex.Store({
       state.token = null;
     },
     setAuthenticated(state, status) {
-      console.log('authenticating');
       state.authenticated = status;
     },
     activate(state) {
@@ -115,7 +177,7 @@ export default new Vuex.Store({
           });
         });
     },
-    authenticate(context) {
+    findMe(context) {
       return new Promise((resolve, reject) => {
         fetch('/api/refresh', {
           method: 'PATCH',
@@ -131,25 +193,20 @@ export default new Vuex.Store({
             return resp.json();
           })
           .then(data => {
-            console.log(data);
-            if(data.status === 'bad') {
-              context.commit('invalidateEverything');
-              reject(data.msg);
-            }
-            if(data.status === 'success') {
-              // code 8 is for when a refreshToken is not present on client
-              if(![8, 13].includes(data.code)) {
-                context.commit('setToken', data.token);
-                context.commit('setAuthenticated', true);
-              }
+            if(data.status === 'success' && data.user !== undefined) {
+              context.commit('setToken', data.token);
+              context.commit('setAuthenticated', true);
               resolve(data);
             }
+            if(data.status === 'bad') {
+              context.commit('invalidateEverything');
+              reject(data);
+            }
           })
-          .catch((error) => {
-            console.log(error);
+          .catch(() => {
             context.commit('invalidateEverything');
-          });
-      });
+          })
+        });
     },
     activate(context, payload) {
       return new Promise((resolve, reject) => {
@@ -190,7 +247,7 @@ export default new Vuex.Store({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': context.state.token
+            'Authorization': context.getters.token
           },
           body: JSON.stringify({
             code: payload.code
@@ -212,7 +269,7 @@ export default new Vuex.Store({
               context.commit('setRefreshToken', data.refreshToken);
               context.commit('setAuthenticated', true);
               // should check if admin here
-              resolve(data.status);
+              resolve(data);
             }
           })
       })
@@ -257,7 +314,7 @@ export default new Vuex.Store({
           })
           .then(data => {
             if(data.status === 'success') {
-              resolve();
+              resolve(data);
             }
             if(data.status === 'bad') {
               reject(data);
@@ -280,6 +337,34 @@ export default new Vuex.Store({
             id: payload.id,
             title: payload.title,
             candidates: payload.candidates
+          })
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            if(data.status === 'success') {
+              resolve(data);
+            }
+            if(data.status === 'bad') {
+              reject(data);
+            }
+          })
+          .catch(error => {
+            reject(error);
+          })
+      });
+    },
+    removePoll(context, payload) {
+      return new Promise((resolve, reject) => {
+        fetch('/api/admin/removePoll', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': context.getters.token
+          },
+          body: JSON.stringify({
+            id: payload
           })
         })
           .then(res => {
@@ -407,53 +492,39 @@ export default new Vuex.Store({
             })
           })
     },
-    isAdmin(context) {
-      return new Promise((resolve, reject) => {
-        fetch('/api/admin/me', {
-          method: 'GET',
-          headers: {
-            'Authorization': context.state.token
-          }
-        })
-          .then(res => {
-            return res.json();
-          })
-          .then(data => {
-            resolve(data);
-          })
-          .catch(error => {
-            reject(error);
-          });
-      });
-    },
-    isMember(context) {
+    isAuthenticated(context, guard) {
       return new Promise((resolve, reject) => {
         fetch('/api/me', {
           method: 'GET',
           headers: {
-            'Authorization': context.state.token
+            'Authorization': context.getters.token
           }
         })
           .then(res => {
             return res.json();
           })
           .then(data => {
-            if(data.status === 'success') {
-              if(data.code === 12) {
-                context.commit('setAuthenticated', true);
-              } else {
-                context.commit('setAuthenticated', false);
+            if(data.status === 'success' && data.user !== undefined) {
+              context.commit('setAuthenticated', true);
+              if(data.user.admin !== undefined && guard.needAdmin === true) {
+                if(data.user.admin === true) {
+                  resolve(data.user);
+                } else {
+                  reject();
+                }
               }
+              // add present and signed in here
+              resolve(null);
             } else {
               context.commit('setAuthenticated', false);
+              reject();
             }
-            resolve(data);
           })
           .catch(error => {
-            context.commit('setAuthenticated', false);
-            reject(error);
+            console.log(error);
+            reject();
           });
-      });
+      })
     },
     validateMember(context, payload) {
       return new Promise((resolve, reject) => {

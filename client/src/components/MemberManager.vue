@@ -5,10 +5,13 @@
                 Lägg till ny medlem som närvarande
                 <v-spacer></v-spacer>
             </v-card-title>
-            <p class="text-left pl-md-4">
-                Sök på personens namn eller email. <br/>
-                Finns den inte i listan måste kårmedlemskap kontrolleras manuellt, lägg sedan till personen manuellt.
-            </p>
+            <v-card-text>
+                <p>
+                    Sök på personens namn eller email. <br>
+                    Finns den inte i listan måste kårmedlemskap kontrolleras manuellt, lägg sedan till personen manuellt.
+                </p>
+            </v-card-text>
+
             <v-autocomplete
                 v-model="newMember"
                 class="d-inline-flex mx-auto pa-md-4"

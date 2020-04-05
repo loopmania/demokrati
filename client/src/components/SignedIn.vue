@@ -23,7 +23,7 @@
                     >
                         {{ getShare() }}%
                     </v-progress-circular><br/>
-                    <p class="mx-auto"> Andel av de närvarande som loggat in </p>
+                    <p class="px-4"> Andel av de närvarande som loggat in </p>
             </v-card>
         </v-hover>
     </div>

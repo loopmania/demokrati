@@ -142,6 +142,36 @@ router.post('/createMember', (req, res) => {
         })
 });
 
+router.get('/countSignedIn', (req, res) => {
+    // ska returnera signedIn: antalet inloggade, validated: antalet validerade
+    Members.count({
+        where: {
+            signed_in: true
+        },
+    })
+        .then((count) => {
+            return MsgHandler(res, 52, {count: count});
+        })
+        .catch(() => {
+            return MsgHandler(res, 53);
+        })
+});
+
+router.get('/countValidated', (req, res) => {
+    // ska returnera signedIn: antalet inloggade, validated: antalet validerade
+    Members.count({
+        where: {
+            present: true
+        },
+    })
+        .then((count) => {
+            return MsgHandler(res, 54, {count: count});
+        })
+        .catch(() => {
+            return MsgHandler(res, 55);
+        })
+});
+
 router.post('/createPoll', (req,res) => {
     const poll = req.body.poll;
     Polls.create({
@@ -244,8 +274,8 @@ router.put('/results', (req, res) => {
                 return MsgHandler(res, 35);
             });
     })
-
 })
+
 router.get('/hasVoted', (req, res) => {
     Members.hasVoted()
         .then(members => {

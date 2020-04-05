@@ -685,6 +685,52 @@ export default new Vuex.Store({
             })
         })
     },
+    countSignedIn(context){
+        // ska returnera signedIn: antalet inloggade
+        return new Promise((resolve, reject) => {
+          fetch('/api/admin/countSignedIn', {
+            method: 'GET',
+            headers: {
+              'Authorization': context.state.token
+            }
+          })
+            .then(resp => {
+              return resp.json();
+            })
+            .then(data => {
+              if(data.status === "bad") {
+                reject(data);
+              }
+              if(data.status === "success") {
+                resolve(data);
+              }
+
+            })
+        })
+    },
+    countValidated(context){
+        // ska returnera validated: antalet validerade
+        return new Promise((resolve, reject) => {
+          fetch('/api/admin/countValidated', {
+            method: 'GET',
+            headers: {
+              'Authorization': context.state.token
+            }
+          })
+            .then(resp => {
+              return resp.json();
+            })
+            .then(data => {
+              if(data.status === "bad") {
+                reject(data);
+              }
+              if(data.status === "success") {
+                resolve(data);
+              }
+
+            })
+        })
+    },
     checkTime(context) {
       return new Promise((resolve,reject) => {
         fetch('/api/timeleft', {

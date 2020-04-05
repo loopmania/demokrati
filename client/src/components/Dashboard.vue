@@ -10,8 +10,7 @@
                 >
                     <v-col
                     class="d-flex align-stretch">
-                        <!-- antalet medlemmar -->
-                        <activePoll/>
+                        <SignedIn/>
                     </v-col>
                     <v-col
                     class="d-flex align-stretch">
@@ -22,7 +21,6 @@
                     <v-col
                     class="d-flex align-stretch">
                         <!-- Misc funktioner -->
-                        <activePoll/>
                     </v-col>
                 </v-row>
             </v-container>
@@ -31,14 +29,12 @@
 </template>
 <script>
 import activePoll from './activePoll';
-
+import SignedIn from './SignedIn';
 export default {
     name: 'Dashboard',
     components: {
-        // add components
+        SignedIn,
         activePoll
     }
-    // kicka alla!
-    // statistik :)
 }
 </script>

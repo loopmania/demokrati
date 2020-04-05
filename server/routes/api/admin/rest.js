@@ -95,7 +95,8 @@ router.get('/invalidMembers', (req, res) => {
     Members.findAll({
         attributes: ['id','email','present','signed_in', 'name', 'searchname'],
         where: {
-            present: false
+            present: false,
+            admin: false
         },
         raw: true
     })

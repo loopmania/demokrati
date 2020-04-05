@@ -60,8 +60,7 @@ Members.resetVote = function() {
             has_voted: true
         }
     })
-}
-
+};
 Members.reset = function() {
     Members.update({
         signed_in: false,
@@ -73,8 +72,30 @@ Members.reset = function() {
             present: true
         }
     })
+};
+Members.hasVoted = function() {
+    return new Promise((resolve, reject) => {
+        Members.findAll({
+            attributes: ['has_voted', [Sequelize.fn('COUNT', 'has_voted'), 'result']],
+            group: ['has_voted'],
+            raw: true
+        })
+            .then(members => {
+                let data = [];
+                let totalMembers = 0;
+                members.forEach(member => totalMembers += parseInt(members.result));
+                members.forEach(member => data.push({
+                    hasVoted: member.has_voted,
+                    percentage: +((parseInt(member.result) / totalMembers * 100).toFixed(2))
+                }));
+                resolve(data);
+            })
+            .catch(() => {
+                reject();
+            })
+    })
+    
 }
-
 
 Members.prototype.activate = function() {
     /*

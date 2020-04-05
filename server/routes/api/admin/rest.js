@@ -246,6 +246,12 @@ router.put('/results', (req, res) => {
     })
 
 })
+router.get('/hasVoted', (req, res) => {
+    Members.hasVoted()
+        .then(members => {
+            //return MsgHandler(res, )
+        })
+})
 
 router.put('/inactivate', (req, res) => {
     const poll = req.body.pollID;

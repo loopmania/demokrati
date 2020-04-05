@@ -235,6 +235,7 @@ router.put('/vote', auth, isMember, (req, res) => {
                         pollId: poll,
                         vote: candidate
                     });
+                    exports.io.to('admin').emit('updatePoll');
                     return MsgHandler(res, 27);
                 })
                 .catch(()=> {
@@ -260,4 +261,7 @@ router.get('/timeleft', auth, isMember, (req, res) => {
 });
 
 module.exports = router;
+module.exports.init = ({ io }) => {
+    exports.io = io;
+};
 

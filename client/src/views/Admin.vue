@@ -29,10 +29,6 @@
 //import MemberManager from '../components/MemberManager';
 
 export default {
-    /*components: {
-        Dashboard,
-        PollManager,
-        MemberManager
-    },*/
+    
 };
 </script>

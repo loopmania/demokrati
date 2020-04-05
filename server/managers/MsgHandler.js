@@ -350,7 +350,7 @@ const Handler = (res, id, args) => {
             code: 51,
             msg: `Please contact valberedningen or IT-Ansvarig. \
             ${args.reason}`
-        }
+        },
     ];
     id-=1;
     const handle = handles[id];

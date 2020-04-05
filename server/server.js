@@ -74,6 +74,7 @@ const io = socket(secureServer, {
     pingTimeout: 60000,
 });
 ADMIN.init({io});
+REST.init({io});
 
 io.on('connection', (socket) => {
     console.log(`client ${socket.id} connected`);

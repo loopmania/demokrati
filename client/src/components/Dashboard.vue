@@ -11,16 +11,18 @@
                     <v-col
                     class="d-flex align-stretch">
                         <!-- antalet medlemmar -->
+                        <activePoll/>
                     </v-col>
                     <v-col
                     class="d-flex align-stretch">
-                        <!-- Aktiv omröstning -->
+                        <activePoll/>
                     </v-col>
                 </v-row>
                 <v-row>
                     <v-col
                     class="d-flex align-stretch">
                         <!-- Misc funktioner -->
+                        <activePoll/>
                     </v-col>
                 </v-row>
             </v-container>
@@ -28,10 +30,13 @@
     </div>
 </template>
 <script>
+import activePoll from './activePoll';
+
 export default {
     name: 'Dashboard',
     components: {
         // add components
+        activePoll
     }
     // kicka alla!
     // statistik :)

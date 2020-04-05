@@ -146,7 +146,8 @@ router.get('/countSignedIn', (req, res) => {
     // ska returnera signedIn: antalet inloggade, validated: antalet validerade
     Members.count({
         where: {
-            signed_in: true
+            signed_in: true,
+            present: true
         },
     })
         .then((count) => {
@@ -289,7 +290,7 @@ router.get('/hasVoted', (req, res) => {
                 .catch(() => {
                     return MsgHandler(res, 43);
                 })
-            
+
         })
         .catch(() => {
             return MsgHandler(res, 43);

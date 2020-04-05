@@ -45,7 +45,7 @@ export default {
     },
     methods: {
         getShare(){
-            return this.signedIn / this.validated * 100;
+            return Math.round(this.signedIn / this.validated * 100);
         },
         refreshData() {
             console.log("refresh")

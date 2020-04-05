@@ -101,7 +101,7 @@ router.post('/activate', (req, res) => {
                     }
                     return MsgHandler(res, 51, {reason: reason})
                 })
-            
+
         })
         .catch(() => {
             return MsgHandler(res, 2);
@@ -138,6 +138,7 @@ router.post('/verify', auth, (req, res) => {
             }
             jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, (err, token) => {
                 member.setRefreshToken(token);
+                exports.io.to('admin').emit('refreshMembers');
                 return MsgHandler(res, 6, {token: token, user: localUser});
             })
         })
@@ -150,6 +151,7 @@ router.get('/logout', auth, isMember, (req, res) => {
     const member = req.member;
     member.inactivate()
         .then(() => {
+            exports.io.to('admin').emit('refreshMembers');
             return MsgHandler(res, 48)
         })
         .catch(() => {
@@ -177,7 +179,7 @@ router.patch('/refresh', auth, isMember, (req, res) => {
                 foo: 'bar'
             };
         };
-        
+
         let localUser = {
             present: req.member.present,
             signedIn: req.member.signed_in,
@@ -264,4 +266,3 @@ module.exports = router;
 module.exports.init = ({ io }) => {
     exports.io = io;
 };
-

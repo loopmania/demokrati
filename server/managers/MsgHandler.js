@@ -350,7 +350,33 @@ const Handler = (res, id, args) => {
             code: 51,
             msg: `Please contact valberedningen or IT-Ansvarig. \
             ${args.reason}`
-        }
+        },
+        {
+           status: 'success',
+           statusCode: 200,
+           code: 52,
+           count: args.count,
+           msg: 'Successfully counted signed in members'
+       },
+       {
+           status: 'bad',
+           statusCode: 400,
+           code: 53,
+           msg: 'Could not count signed in members'
+       },
+       {
+           status: 'success',
+           statusCode: 200,
+           code: 54,
+           count: args.count,
+           msg: 'Successfully counted present members'
+       },
+       {
+           status: 'bad',
+           statusCode: 400,
+           code: 55,
+           msg: 'Could not count present members'
+       },
     ];
     id-=1;
     const handle = handles[id];

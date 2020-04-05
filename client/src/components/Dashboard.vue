@@ -10,7 +10,7 @@
                 >
                     <v-col
                     class="d-flex align-stretch">
-                        <!-- antalet medlemmar -->
+                        <SignedIn/>
                     </v-col>
                     <v-col
                     class="d-flex align-stretch">
@@ -28,12 +28,12 @@
     </div>
 </template>
 <script>
+import SignedIn from './SignedIn';
 export default {
     name: 'Dashboard',
     components: {
+        SignedIn,
         // add components
     }
-    // kicka alla!
-    // statistik :)
 }
 </script>

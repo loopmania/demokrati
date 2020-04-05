@@ -48,7 +48,6 @@ export default {
             return Math.round(this.signedIn / this.validated * 100);
         },
         refreshData() {
-            console.log("refresh")
             this.$store.dispatch('countSignedIn')
                 .then(result => {
                     if(result.status === 'success') {

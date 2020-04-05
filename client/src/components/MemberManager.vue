@@ -50,7 +50,7 @@
             :search="search"
             >
             <template v-slot:item="row">
-                <tr :class="getColor(row.item.signedIn)">
+                <tr :class="getColor(row.item.signed_in)">
                   <td>{{row.item.name}}</td>
                   <td>{{row.item.email}}</td>
                   <td>
@@ -112,11 +112,8 @@ export default {
         },
         resetDialog() {
             this.memberDialog = false;
-            console.log(this.NewMemberManual);
         },
         invalidateMember(member){
-            console.log("invalidate")
-            console.log(member)
             this.$store.dispatch('invalidateMember', member)
                 .then(result => {
                     console.log(result);
@@ -126,8 +123,6 @@ export default {
                 })
         },
         validateMember(){
-            console.log(this.newMember)
-            console.log(this.newMember)
             /*
             let email;
             if (this.newMember === ''){
@@ -165,7 +160,6 @@ export default {
                 })
         },
         refreshData() {
-            console.log("refresh")
             this.$store.dispatch('getInvalidMembers')
                 .then(result => {
                     if(result.status === 'success') {

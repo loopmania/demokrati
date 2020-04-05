@@ -36,7 +36,10 @@ Polls.findActive = function() {
                 } else {
                     resolve(result.rows);
                 }
-            });
+            })
+            .catch(() => {
+                reject();
+            })
     })
 };
 Polls.activate = function(poll) {

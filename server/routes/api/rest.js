@@ -235,7 +235,7 @@ router.put('/vote', auth, isMember, (req, res) => {
                         pollId: poll,
                         vote: candidate
                     });
-                    exports.io.to('admin').emit('updatePoll');
+                    await exports.io.to('admin').emit('updatePoll');
                     return MsgHandler(res, 27);
                 })
                 .catch(()=> {

@@ -279,7 +279,20 @@ router.put('/results', (req, res) => {
 router.get('/hasVoted', (req, res) => {
     Members.hasVoted()
         .then(members => {
-            //return MsgHandler(res, )
+            Polls.findActive()
+                .then(result => {
+                    const poll = result[0].title;
+                    if(result[0].active === true) {
+                        return MsgHandler(res, 56, {count: members, title: poll});
+                    }
+                })
+                .catch(() => {
+                    return MsgHandler(res, 43);
+                })
+            
+        })
+        .catch(() => {
+            return MsgHandler(res, 43);
         })
 })
 

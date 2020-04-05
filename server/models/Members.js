@@ -78,12 +78,15 @@ Members.hasVoted = function() {
         Members.findAll({
             attributes: ['has_voted', [Sequelize.fn('COUNT', 'has_voted'), 'result']],
             group: ['has_voted'],
+            where: {
+                signed_in: true
+            },
             raw: true
         })
             .then(members => {
                 let data = [];
                 let totalMembers = 0;
-                members.forEach(member => totalMembers += parseInt(members.result));
+                members.forEach(member => totalMembers += parseInt(member.result));
                 members.forEach(member => data.push({
                     hasVoted: member.has_voted,
                     percentage: +((parseInt(member.result) / totalMembers * 100).toFixed(2))
@@ -216,9 +219,14 @@ Members.prototype.vote = function() {
                 signed_in: true,
             }
         })
-            .then(resolve())
-            .catch(reject())
-    });
+            .then(result => {
+                if(result[0] === 1) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
+        })
 };
 
 

@@ -377,6 +377,14 @@ const Handler = (res, id, args) => {
            code: 55,
            msg: 'Could not count present members'
        },
+       {
+           status: 'success',
+           statusCode: 200,
+           code: 56,
+           count: args.count,
+           title: args.title,
+           msg: 'Successfullt counted poll votes'
+       },
     ];
     id-=1;
     const handle = handles[id];

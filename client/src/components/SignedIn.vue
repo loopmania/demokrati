@@ -1,32 +1,33 @@
 <template>
-    <div>
-        <v-hover
+    <v-hover
         v-slot:default="{ hover }"
         open-delay="200"
         >
-            <v-card
-            :elevation="hover ? 16 : 2"
-            class="mx-auto text-center"
-            height="350"
-            max-width="350"
-            >
-                <v-card-text class="font-weight-medium mt-12 text-center subtitle-1 ">
-                    Antal inloggade
-                </v-card-text>
-                    <p class="mx-auto"> Inloggade just nu: {{ signedIn }} </p>
-                    <v-progress-circular
-                    :rotate="-90"
-                    :size="200"
-                    :width="30"
-                    :value="getShare()"
-                    color="teal"
-                    >
-                        {{ getShare() }}%
-                    </v-progress-circular><br/>
-                    <p class="px-4"> Andel av de närvarande som loggat in </p>
-            </v-card>
-        </v-hover>
-    </div>
+        <v-card
+        :elevation="hover ? 16 : 2"
+        class="mx-auto"
+        height="350"
+        width="350"
+        >   <v-card-title>
+            Antal inloggade: {{signedIn}}st
+            </v-card-title>
+            <v-card-subtitle>
+                Andelen närvarande som är inloggade
+            </v-card-subtitle>
+            <v-card-text class="font-weight-medium mt-4 text-center">
+
+                <v-progress-circular
+                :rotate="-90"
+                :size="200"
+                :width="30"
+                :value="getShare()"
+                color="teal"
+                >
+                    {{ getShare() }}%
+                </v-progress-circular>
+            </v-card-text>
+        </v-card>
+    </v-hover>
 </template>
 <script>
 export default {

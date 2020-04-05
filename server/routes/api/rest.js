@@ -83,7 +83,7 @@ router.post('/activate', (req, res) => {
                             foo: 'bar'
                         }
                     };
-                    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '25m'},(err, token) => {
+                    jwt.sign(payload, process.env.TOKEN_SECRET, {expiresIn: '10m'},(err, token) => {
                         return MsgHandler(res, 1, {
                             token: token,
                             email: maybeEmail, // to be removed
@@ -247,19 +247,17 @@ router.put('/vote', auth, isMember, (req, res) => {
 });
 
 router.get('/timeleft', auth, isMember, (req, res) => {
-    refresher(req, res);
-
-})
-const refresher = (req, res) => {
     const user = req.user;
     const currentTime = Math.floor(Date.now() / 1000);
     const expireTime = user.exp;
-    if(expireTime - currentTime < 2 * 60 && currentTime < expireTime) {
+    console.log(expireTime - currentTime);
+    if(expireTime - currentTime < 5 * 60 && currentTime < expireTime) {
         return MsgHandler(res, 25);
     } else {
         return MsgHandler(res, 26);
     }
-}
+
+});
 
 module.exports = router;
 

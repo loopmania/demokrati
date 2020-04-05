@@ -97,6 +97,11 @@ export default {
 
         };
     },
+    computed: {
+        easySearch() {
+            return `${this.ths_members}`
+        }
+    },
     methods: {
         getColor(signedIn){
             if (signedIn === true) return "green lighten-5";
@@ -120,17 +125,18 @@ export default {
         validateMember(){
             console.log(this.newMember)
             console.log(this.newMember)
-            var email;
+            /*
+            let email;
             if (this.newMember === ''){
                 email = '';
             }
             else {
                 email = this.newMember.split('(')[1]; // extract email from format "Name (email)"
                 email = email.replace(")", "");
-            }
+            }*/
 
-            let ths_emails = this.ths_members.map(({ email }) => email);
-            if (!ths_emails.includes(email)){
+            //let ths_emails = this.ths_members.map(({ email }) => email);
+            if (!this.ths_members.includes(this.newMember)){
                 this.$store.commit('alertClient', {
                     color: 'error',
                     text: 'Personen du försöker lägga till inte i listan av THS-medlemmar. Kontrollera kårmedlemskap och lägg till manuellt.',
@@ -144,6 +150,7 @@ export default {
                 return
             }
 
+            const email = this.newMember.split('(')[1].replace(')','');
             this.$store.dispatch('validateMember', email)
                 .then(() => {
                     this.newMember = '';
@@ -159,7 +166,10 @@ export default {
             this.$store.dispatch('getInvalidMembers')
                 .then(result => {
                     if(result.status === 'success') {
-                        this.ths_members = result.members;
+                        //this.ths_members = result.members;
+                        result.members.forEach(member => {
+                            this.ths_members.push(`${member.name} (${member.email})`);
+                        });
                     }
                 })
                 .catch(() => {

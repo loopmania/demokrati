@@ -50,16 +50,18 @@ export default {
         })
     },
     refresh() {
-      const timer = setTimeout(() => {
-        this.$store.dispatch('destroyToken');
-      }, 2 * 60 * 1000);
       this.$store.dispatch('checkTime')
         .then(result => {
+          const time = 3 * 60 * 1000;
+          const timer = setTimeout(() => {
+            this.$store.dispatch('destroyToken');
+          }, time);
           if(result.status === 'bad') {
+            
             this.$store.commit('alertClient', {
               color: 'warning',
               text: 'Är du fortfarande kvar?',
-              timeout: 2 * 60 * 1000,
+              timeout: time,
               snackbar: true,
               action: {
                 method: 'update',
@@ -69,10 +71,10 @@ export default {
             })
           } else {
             console.log(result.msg);
+            clearTimeout(timer);
           }
         })
-        .catch(error => {
-          console.log(error);
+        .catch(() => {
           this.$store.dispatch('destroyToken');
         });
     },

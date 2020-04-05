@@ -64,11 +64,13 @@ Members.resetVote = function() {
 
 Members.reset = function() {
     Members.update({
-        signed_in: false
+        signed_in: false,
+        present: false
     },
     {
         where: {
-            signed_in: true
+            signed_in: true,
+            present: true
         }
     })
 }
@@ -135,19 +137,29 @@ Members.prototype.setAttendance = function() {
         this.attendance.forEach(att => data.push(att))
     }
     if(month === 8 || month === 9) {
-        data.push('SM1');
+        if(!data.includes('SM1')) {
+            data.push('SM1');
+        }
     }
     if(month === 10 || month === 11) {
-        data.push('SM2');
+        if(!data.includes('SM2')) {
+            data.push('SM2');
+        }
     }
     if(month === 1 || month === 2) {
-        data.push('SM3');
+        if(!data.includes('SM3')) {
+            data.push('SM3');
+        }
     }
     if(month === 3 || month === 4) {
-        data.push('SM4');
+        if(!data.includes('SM4')) {
+            data.push('SM4');
+        }
     }
     if(month >= 5 && month <= 7) {
-        data.push('SMX');
+        if(!data.includes('SMX')) {
+            data.push('SMX');
+        }
     }
     this.attendance = data;
     this.save();

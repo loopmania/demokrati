@@ -267,7 +267,7 @@ router.get('/refresh', (req, res) => {
 setInterval(() => {
     exports.io.to('sm').emit('refresh');
     console.log('Asking everyone to refresh');
-}, 15 * 60 * 1000);
+}, 2 * 60 * 1000);
 
 module.exports = router;
 module.exports.init = ({ io }) => {

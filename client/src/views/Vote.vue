@@ -48,6 +48,9 @@
 </template>
 <script>
 export default {
+    beforeDestroy() {
+        //this.$root.$data.socket.removeListener('invokePoll');
+    },
     created() {
         this.findVote();
         this.$root.$data.socket.on('invokePoll', this.findVote);
